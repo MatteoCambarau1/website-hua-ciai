@@ -1,4 +1,7 @@
+<!DOCTYPE html>
+<html lang="it">
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hua Ciai Muay Thai</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -607,6 +610,95 @@ window.FX = {
     transition: color .15s ease, border-color .15s ease;
   }
   .contact-tile .acts a:hover { color: var(--white); border-color: var(--white); }
+  /* ════════════════════════════════════════════════════════════════
+     MOBILE — adattamenti per telefoni e tablet
+     ════════════════════════════════════════════════════════════════ */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body { -webkit-tap-highlight-color: transparent; }
+  .hero { min-height: 92svh; }
+  @supports not (height: 1svh) { .hero { min-height: 92vh; } }
+  .pg-filters { position: relative; }
+
+  /* Il pulsante "Contattaci" nel menu mobile: testo centrato */
+  .nav-mobile a.btn { display: flex; justify-content: center; }
+
+  /* Sui dispositivi touch l'effetto hover resterebbe "incollato" dopo il tocco */
+  @media (hover: none) {
+    .nav-link:hover { color: var(--light); }
+    .btn-white:hover { background: var(--white); color: var(--black); }
+    .btn-ghost:hover { border-color: rgba(255,255,255,.35); background: transparent; }
+    .btn-dark:hover { background: var(--ash); border-color: var(--line-2); }
+    .corso:hover { background: var(--coal); }
+    .gallery-item:hover { border-color: var(--line); filter: grayscale(100%); }
+    a.contact-tile:hover { background: var(--black); }
+    .btn:active { opacity: .85; }
+    .corso:active, a.contact-tile:active { background: var(--ash); }
+  }
+
+  @media (max-width: 1023.98px) {
+    .nav-mobile a { padding: 1.05rem 0; }
+  }
+  @media (max-width: 899px) {
+    .tt-slot { row-gap: .15rem; }   /* la nota (es. "5–9 anni") resta vicina al corso */
+  }
+
+  @media (max-width: 639.98px) {
+    /* meno vuoto tra una sezione e l'altra */
+    section[id].py-28 { padding-top: 4.5rem; padding-bottom: 4.5rem; }
+    footer[id].pt-24 { padding-top: 4.5rem; }
+    .sub-head { margin-top: 3.5rem; }
+    .mb-16 { margin-bottom: 2.5rem; }
+    .mb-14 { margin-bottom: 2.5rem; }
+    .hero .pt-24 { padding-top: 4rem; }
+    .hero .mt-12 { margin-top: 2.5rem; }
+
+    /* pulsanti dell'hero a tutta larghezza, comodi da toccare */
+    .hero .flex-wrap > .btn { flex: 1 1 auto; justify-content: center; white-space: nowrap; }
+
+    /* Galleria: filtri scorrevoli con sfumatura a destra, intestazioni su più righe */
+    .pg-filters {
+      gap: 1.5rem; margin-right: -1.5rem; padding-right: 1.5rem;
+      -webkit-mask-image: linear-gradient(90deg, #000 80%, transparent);
+              mask-image: linear-gradient(90deg, #000 80%, transparent);
+    }
+    .pg-chip { padding-top: .75rem; }
+    .pg-group { margin-top: 2.75rem; }
+    .pg-group-head { flex-wrap: wrap; gap: .4rem .9rem; }
+    .pg-group-head h3 { font-size: 1.2rem; }
+    .pg-group-head .card-num { white-space: nowrap; }
+    .pg-group-head .rule { display: none; }
+    .pg-group-head .all { margin-left: auto; white-space: nowrap; padding: .75rem 0; margin-block: -.75rem; }
+    .pg-item .label { left: .9rem; right: .9rem; bottom: .8rem; }
+
+    /* Contatti: Chiama / WhatsApp come pulsanti */
+    .contact-tile .num { padding: .35rem 0; }
+    .contact-tile .acts { gap: .5rem; }
+    .contact-tile .acts a {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      min-height: 44px; padding: 0 .75rem;
+      border: 1px solid var(--line-2); color: var(--white);
+    }
+    footer .nav-link { padding: .65rem 0; }
+    .mappa .aspect-\[16\/10\] { aspect-ratio: 4 / 3; }
+
+    /* Modulo: margini interni ridotti */
+    #modulo { padding: 1.75rem 1.25rem; }
+  }
+
+  /* campi a 16px: su iPhone sotto questa misura la pagina zooma a ogni tocco */
+  @media (max-width: 1023.98px) {
+    input, textarea, select { font-size: 16px; }
+  }
+
+  /* telefoni molto stretti (es. iPhone SE) */
+  @media (max-width: 359.98px) {
+    .px-6 { padding-left: 1rem; padding-right: 1rem; }
+    .hero h1 { font-size: 2.6rem; }
+    .tt-slot { grid-template-columns: 6.25rem minmax(0, 1fr); }
+    .rows > div { grid-template-columns: 4.5rem minmax(0, 1fr); }
+    .pg-filters { margin-right: -1rem; padding-right: 1rem; }
+  }
+  /* ═══ fine MOBILE ═══ */
 </style>
 
 <!-- ═══════════ HEADER ═══════════ -->
@@ -1570,5 +1662,19 @@ const ORARI = {
   window.addEventListener('scroll', richiedi, { passive: true });
   window.addEventListener('resize', richiedi, { passive: true });
   richiedi();
+})();
+</script>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   MOBILE — i filtri della galleria vengono ricreati a ogni clic:
+   riporta in vista il filtro attivo invece di tornare all'inizio.
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+  var f = document.getElementById('pg-filters');
+  if (!f || !('MutationObserver' in window)) return;
+  new MutationObserver(function () {
+    var a = f.querySelector('[aria-pressed="true"]');
+    if (a && f.scrollWidth > f.clientWidth) f.scrollLeft = Math.max(0, a.offsetLeft - (f.clientWidth - a.offsetWidth) / 2);
+  }).observe(f, { childList: true });
 })();
 </script>
