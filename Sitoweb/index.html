@@ -698,6 +698,104 @@ window.FX = {
     .rows > div { grid-template-columns: 4.5rem minmax(0, 1fr); }
     .pg-filters { margin-right: -1rem; padding-right: 1rem; }
   }
+  /* ── MOBILE · barra delle sezioni al posto del menu ad hamburger ──
+     Sotto i 1024px le voci del menu restano sempre visibili in una riga
+     scorrevole sotto il logo; il "Contattaci" sta accanto al logo. */
+  @media (max-width: 1023.98px) {
+    .nav-toggle, .nav-mobile, html.fx-transizioni .nav-mobile { display: none !important; }
+    .header-wrap > div:first-child {
+      height: auto; flex-wrap: wrap; row-gap: 0; padding-top: .7rem;
+    }
+    .header-wrap .logo-img { height: 36px; }
+    .nav-cta { display: inline-flex; padding: .7rem 1rem; font-size: .66rem; letter-spacing: .16em; }
+    .nav-desktop {
+      display: flex; order: 3; flex: 0 0 auto; width: calc(100% + 3rem);
+      margin: .35rem -1.5rem 0; padding: 0 1.5rem; gap: 1.6rem;
+      overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+      border-top: 1px solid var(--line);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 1.25rem, #000 calc(100% - 2.5rem), transparent);
+              mask-image: linear-gradient(90deg, transparent 0, #000 1.25rem, #000 calc(100% - 2.5rem), transparent);
+    }
+    .nav-desktop::-webkit-scrollbar { display: none; }
+    .nav-desktop .nav-link { flex: none; padding: .95rem 0; font-size: .7rem; letter-spacing: .16em; }
+    .nav-desktop .nav-link::after { bottom: .55rem; }
+    section[id], footer[id] { scroll-margin-top: 4.5rem; }   /* il titolo arriva poco sotto la barra */
+    #modulo { scroll-margin-top: 8rem !important; }
+    /* con due righe l'header non si accorcia: diventa solo più opaco */
+    html.fx-header.fx-scrolled { --fx-shift: 0px; }
+    html.fx-header.fx-scrolled .header-wrap::before,
+    html.fx-header.fx-scrolled .header-wrap::after,
+    html.fx-header.fx-scrolled .header-wrap > div:first-child,
+    html.fx-header.fx-scrolled .header-wrap .logo-img { transform: none; }
+    html.fx-header.fx-scrolled .header-wrap::after { opacity: .96; }
+  }
+  @media (max-width: 639.98px) {
+    footer[id].pb-12 { padding-bottom: 5.5rem; }   /* spazio per il pulsante "torna su" */
+  }
+  @media (max-width: 359.98px) {
+    .nav-desktop { width: calc(100% + 2rem); margin-left: -1rem; margin-right: -1rem; padding: 0 1rem; gap: 1.3rem; }
+  }
+
+  /* ── Pulsante "torna su" (lo crea il JS) ── */
+  .totop {
+    position: fixed; z-index: 45; right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+    background: rgba(17,17,17,.88); color: var(--white); border: 1px solid var(--line-2);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); cursor: pointer;
+    opacity: 0; visibility: hidden; transform: translateY(8px);
+  }
+  html.fx .totop { transition: opacity .3s ease, transform .4s var(--fx-ease), visibility 0s linear .4s; }
+  .totop.on { opacity: 1; visibility: visible; transform: none; }
+  html.fx .totop.on { transition: opacity .3s ease, transform .4s var(--fx-ease), visibility 0s; }
+  .totop:focus-visible { outline: 1px solid var(--white); outline-offset: 3px; }
+  @media (hover: hover) and (pointer: fine) { .totop:hover { border-color: var(--white); } }
+  /* ── MOBILE · PAGINA PIÙ CORTA (solo telefono) ── */
+  .tt-tabs { display: none; }
+  .corso-btn { all: unset; box-sizing: border-box; display: block; width: 100%; }
+  .corso-btn .quando { display: none; }
+  @media (max-width: 639.98px) {
+    /* Orari: un giorno alla volta, scelto dalla fila di giorni (la crea il JS) */
+    .tt-tabs {
+      display: grid; grid-template-columns: repeat(var(--giorni, 5), minmax(0, 1fr));
+      margin-top: 1.5rem; border: 1px solid var(--line); border-bottom: 0; background: var(--black);
+    }
+    .tt-tabs button {
+      background: none; border: 0; border-bottom: 1px solid var(--line-2); cursor: pointer;
+      min-height: 48px; padding: 0; font-family: inherit; color: var(--muted);
+      font-size: .7rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+    }
+    .tt-tabs button[aria-pressed="true"] { color: var(--white); border-bottom-color: var(--white); background: var(--ash); }
+    .tt-tabs button.oggi::after { content: ''; display: block; width: 4px; height: 4px; margin: .35rem auto 0; background: currentColor; }
+    .tt.a-schede { margin-top: 0; border-top: 0; }
+    .tt.a-schede .tt-day:not(.sel) { display: none; }
+
+    /* Corsi: schede chiuse, si aprono toccando il titolo */
+    .corsi-grid.a-fisarmonica .corso { padding: 1.35rem 1.25rem; }
+    .corsi-grid.a-fisarmonica .corso > .card-num { margin-bottom: .35rem !important; }
+    .corsi-grid.a-fisarmonica .corso h3 { margin-bottom: 0; }
+    .corsi-grid.a-fisarmonica .corso:not(.aperto) > p,
+    .corsi-grid.a-fisarmonica .corso:not(.aperto) > dl { display: none; }
+    .corsi-grid.a-fisarmonica .corso.aperto h3 { margin-bottom: .75rem; }
+    .corso-btn { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 44px; cursor: pointer; }
+    .corso-btn::after {
+      content: ''; flex: none; width: 9px; height: 9px; margin-right: 4px;
+      border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted);
+      transform: translateY(-3px) rotate(45deg);
+    }
+    .corso.aperto .corso-btn::after { transform: translateY(2px) rotate(-135deg); }
+    html.fx .corso-btn::after { transition: transform .3s var(--fx-ease); }
+    .corso-btn:focus-visible { outline: 1px solid var(--white); outline-offset: 4px; }
+    .corso-btn .quando { display: block; margin-top: .3rem; font-size: .72rem; font-weight: 400; letter-spacing: .04em; color: var(--muted); }
+    .corso.aperto .corso-btn .quando { display: none; }
+
+    /* Galleria, vista "Tutte": due foto per categoria; le altre con "Solo questa →" */
+    #pg-body.anteprima .pg-grid > .pg-item:nth-child(n+3) { display: none; }
+    #pg-body.anteprima .pg-item.big { grid-column: auto; grid-row: auto; }
+
+    /* Immagini segnaposto meno alte */
+    .logo-img.large { height: 200px; }
+    .portrait { aspect-ratio: 1 / 1; }
+  }
   /* ═══ fine MOBILE ═══ */
 </style>
 
@@ -1676,5 +1774,120 @@ const ORARI = {
     var a = f.querySelector('[aria-pressed="true"]');
     if (a && f.scrollWidth > f.clientWidth) f.scrollLeft = Math.max(0, a.offsetLeft - (f.clientWidth - a.offsetWidth) / 2);
   }).observe(f, { childList: true });
+})();
+
+/* MOBILE — pagina più corta sul telefono: orari a schede, corsi a fisarmonica,
+   galleria "Tutte" in anteprima. Su schermi più larghi non cambia nulla. */
+(function () {
+  var mq = window.matchMedia('(max-width: 639.98px)');
+
+  /* Orari: una fila di giorni, si apre quello di oggi */
+  var tt = document.getElementById('orario');
+  if (tt) {
+    var giorni = Array.prototype.slice.call(tt.querySelectorAll('.tt-day'));
+    var fila = document.createElement('div');
+    fila.className = 'tt-tabs';
+    fila.setAttribute('role', 'group');
+    fila.setAttribute('aria-label', 'Scegli il giorno');
+    fila.style.setProperty('--giorni', giorni.length);
+    var scegli = function (i) {
+      giorni.forEach(function (g, k) { g.classList.toggle('sel', k === i); });
+      Array.prototype.forEach.call(fila.children, function (b, k) { b.setAttribute('aria-pressed', String(k === i)); });
+    };
+    var iniziale = 0;
+    giorni.forEach(function (g, i) {
+      var nome = (g.querySelector('.d') || {}).textContent || '';
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = nome.trim().slice(0, 3);
+      b.setAttribute('aria-label', nome.trim());
+      if (g.classList.contains('fx-today')) { b.className = 'oggi'; iniziale = i; }
+      b.addEventListener('click', function () { scegli(i); });
+      fila.appendChild(b);
+    });
+    tt.parentNode.insertBefore(fila, tt);
+    scegli(iniziale);
+    tt.classList.add('a-schede');
+  }
+
+  /* Corsi: il titolo diventa un pulsante che apre e chiude la scheda */
+  var griglia = document.getElementById('corsi-grid');
+  if (griglia) {
+    Array.prototype.forEach.call(griglia.querySelectorAll('.corso:not(.pad)'), function (c, i) {
+      var h = c.querySelector('h3'), dl = c.querySelector('dl');
+      if (!h || h.querySelector('.corso-btn')) return;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'corso-btn';
+      var t = document.createElement('span');
+      t.textContent = h.textContent;
+      var dd = dl && dl.querySelectorAll('dd')[1];                    // riga "Quando"
+      if (dd && !dd.classList.contains('todo')) {
+        var q = document.createElement('span'); q.className = 'quando'; q.textContent = dd.textContent; t.appendChild(q);
+      }
+      b.appendChild(t);
+      h.textContent = ''; h.appendChild(b);
+      b.addEventListener('click', function () {
+        if (!mq.matches) return;
+        var ap = c.classList.toggle('aperto');
+        b.setAttribute('aria-expanded', String(ap));
+      });
+    });
+  }
+  function aggiornaCorsi() {
+    if (!griglia) return;
+    griglia.classList.toggle('a-fisarmonica', mq.matches);
+    Array.prototype.forEach.call(griglia.querySelectorAll('.corso-btn'), function (b) {
+      if (mq.matches) b.setAttribute('aria-expanded', String(b.closest('.corso').classList.contains('aperto')));
+      else b.removeAttribute('aria-expanded');
+      b.tabIndex = mq.matches ? 0 : -1;
+    });
+  }
+  aggiornaCorsi();
+
+  /* Galleria: in "Tutte" due foto per categoria (la scelta del filtro ricrea la griglia) */
+  var corpo = document.getElementById('pg-body'), filtri = document.getElementById('pg-filters');
+  function aggiornaGalleria() {
+    if (!corpo || !filtri) return;
+    var prima = filtri.querySelector('.pg-chip');
+    corpo.classList.toggle('anteprima', mq.matches && !!prima && prima.getAttribute('aria-pressed') === 'true');
+  }
+  if (filtri && 'MutationObserver' in window) new MutationObserver(aggiornaGalleria).observe(filtri, { childList: true });
+  aggiornaGalleria();
+
+  if (mq.addEventListener) mq.addEventListener('change', function () { aggiornaCorsi(); aggiornaGalleria(); });
+  else if (mq.addListener) mq.addListener(function () { aggiornaCorsi(); aggiornaGalleria(); });
+})();
+
+/* MOBILE — barra delle sezioni: la voce attiva resta in vista */
+(function () {
+  var barra = document.querySelector('.nav-desktop');
+  if (!barra || !('MutationObserver' in window)) return;
+  var piano = window.FX && window.FX.fermo ? 'auto' : 'smooth';
+  new MutationObserver(function () {
+    var a = barra.querySelector('.fx-current');
+    if (!a || barra.scrollWidth <= barra.clientWidth) return;
+    var x = Math.max(0, a.offsetLeft - (barra.clientWidth - a.offsetWidth) / 2);
+    if (Math.abs(barra.scrollLeft - x) > 4) {
+      try { barra.scrollTo({ left: x, behavior: piano }); } catch (e) { barra.scrollLeft = x; }
+    }
+  }).observe(barra, { subtree: true, attributes: true, attributeFilter: ['class'] });
+})();
+
+/* Pulsante "torna su": compare dopo la prima schermata */
+(function () {
+  var b = document.createElement('button');
+  b.type = 'button'; b.className = 'totop'; b.setAttribute('aria-label', 'Torna all\'inizio della pagina');
+  b.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="1.6"/></svg>';
+  document.body.appendChild(b);
+  b.addEventListener('click', function () {
+    var fermo = window.FX && window.FX.fermo;
+    try { window.scrollTo({ top: 0, behavior: fermo ? 'auto' : 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
+    var logo = document.querySelector('.header-wrap a');
+    if (logo) logo.focus({ preventScroll: true });
+  });
+  var attesa = false;
+  function aggiorna() { attesa = false; b.classList.toggle('on', (window.pageYOffset || 0) > window.innerHeight * 0.9); }
+  window.addEventListener('scroll', function () { if (!attesa) { attesa = true; requestAnimationFrame(aggiorna); } }, { passive: true });
+  aggiorna();
 })();
 </script>
