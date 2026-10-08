@@ -797,6 +797,93 @@ window.FX = {
     .portrait { aspect-ratio: 1 / 1; }
   }
   /* ═══ fine MOBILE ═══ */
+  /* ════════════════════════════════════════════════════════════════
+     PRIVACY E COOKIE — banner di consenso, informativa, mappa al consenso
+     ════════════════════════════════════════════════════════════════ */
+  /* Mappa: finché non c'è il consenso resta il riquadro con il pulsante */
+  .mappa iframe:not([src]) { display: none; }
+  .mappa-ph {
+    position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: .9rem; padding: 1.25rem; text-align: center;
+    background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  .mappa-ph p { max-width: 22rem; font-size: .8rem; line-height: 1.5; color: var(--muted); }
+  .mappa-ph .btn { padding: .8rem 1.3rem; }
+  .mappa-ph a.ext { font-size: .64rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line-2); padding: .5rem 0 .15rem; }
+  .mappa.caricata .mappa-ph { display: none; }
+
+  /* Link nel footer */
+  .cc-links { display: flex; gap: 1.25rem; }
+  .cc-links button, .cc-link {
+    background: none; border: 0; padding: .5rem 0; cursor: pointer; font-family: inherit; color: inherit;
+    font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; text-decoration: underline;
+    text-underline-offset: 3px; text-decoration-color: var(--line-2);
+  }
+  .cc-link { padding: 0; font-size: inherit; letter-spacing: 0; text-transform: none; color: var(--white); }
+  .cc-links button:hover, .cc-link:hover { color: var(--white); text-decoration-color: var(--white); }
+
+  /* Banner */
+  .cc {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 55;
+    background: var(--black); border-top: 1px solid var(--line-2);
+    box-shadow: 0 -18px 40px rgba(0,0,0,.45);
+    padding: 1.4rem 1.5rem calc(1.4rem + env(safe-area-inset-bottom, 0px));
+    max-height: 85vh; overflow-y: auto;
+  }
+  html.fx .cc { animation: ccSu .5s var(--fx-ease) both; }
+  @keyframes ccSu { from { transform: translateY(100%); } }
+  .cc-in { max-width: 80rem; margin: 0 auto; display: grid; gap: 1.25rem; align-items: center; }
+  @media (min-width: 900px) { .cc-in { grid-template-columns: minmax(0, 1fr) auto; gap: 2.5rem; } }
+  .cc-txt p { margin-top: .6rem; font-size: .88rem; line-height: 1.6; color: var(--light); max-width: 46rem; }
+  .cc-act { display: flex; flex-wrap: wrap; gap: .6rem; }
+  .cc-act .btn { justify-content: center; padding: .85rem 1.3rem; }
+  @media (max-width: 639.98px) {
+    .cc { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .cc-act .btn { flex: 1 1 8rem; }
+    .cc-act [data-cc="pers"], .cc-act [data-cc="salva"] { flex-basis: 100%; order: 3; }
+    .cc-act .btn { white-space: nowrap; padding-left: .7rem; padding-right: .7rem; letter-spacing: .14em; }
+  }
+  @media (max-width: 899.98px) {
+    .cc-pref { order: 1; }
+    .cc-act { order: 2; }
+  }
+  .cc-pref { grid-column: 1 / -1; border-top: 1px solid var(--line); }
+  .cc-pref label {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .3rem 1.5rem; align-items: center;
+    padding: 1rem 0; border-bottom: 1px solid var(--line); cursor: pointer;
+    font-size: inherit; letter-spacing: 0; text-transform: none; font-weight: 400; color: var(--light);
+  }
+  .cc-pref strong { color: var(--white); font-weight: 500; font-size: .9rem; }
+  .cc-pref small { grid-column: 1; font-size: .78rem; line-height: 1.5; color: var(--muted); }
+  .cc-pref input[type="checkbox"] {
+    grid-row: 1 / span 2; grid-column: 2;
+    -webkit-appearance: none; appearance: none; width: 44px; height: 24px; padding: 0; margin: 0;
+    border: 1px solid var(--line-2); border-radius: 0; background: var(--ash); position: relative; cursor: pointer;
+  }
+  .cc-pref input[type="checkbox"]::before {
+    content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: var(--muted);
+  }
+  html.fx .cc-pref input[type="checkbox"]::before { transition: transform .25s var(--fx-ease); }
+  .cc-pref input[type="checkbox"]:checked { background: var(--white); border-color: var(--white); }
+  .cc-pref input[type="checkbox"]:checked::before { transform: translateX(20px); background: var(--black); }
+  .cc-pref input[type="checkbox"]:disabled { opacity: .55; cursor: not-allowed; }
+  .cc-pref input[type="checkbox"]:focus-visible { outline: 1px solid var(--white); outline-offset: 3px; }
+  html.cc-on .totop { display: none; }
+
+  /* Informativa */
+  .cc-dlg {
+    width: min(42rem, calc(100% - 2rem)); max-height: 85vh; padding: 0; margin: auto;
+    background: var(--coal); color: var(--light); border: 1px solid var(--line-2);
+  }
+  .cc-dlg::backdrop { background: rgba(0,0,0,.7); }
+  .cc-dlg-in { padding: 2rem 1.75rem; overflow-y: auto; max-height: 85vh; }
+  .cc-dlg h2 { font-size: 1.5rem; font-weight: 600; margin: .6rem 0 1.25rem; }
+  .cc-dlg h3 { font-size: .95rem; font-weight: 600; margin: 1.5rem 0 .5rem; }
+  .cc-dlg p, .cc-dlg li { font-size: .86rem; line-height: 1.65; color: var(--light); }
+  .cc-dlg ul { margin: .4rem 0 0 1.1rem; list-style: square; }
+  .cc-dlg a { color: var(--white); text-decoration: underline; text-underline-offset: 3px; }
+  /* ═══ fine PRIVACY E COOKIE ═══ */
 </style>
 
 <!-- ═══════════ HEADER ═══════════ -->
@@ -1067,8 +1154,15 @@ window.FX = {
         <div class="corner-frame mappa relative overflow-hidden" style="background: var(--ash);">
           <span class="cbl"></span><span class="cbr"></span>
           <div class="aspect-[16/10] relative">
-            <!-- Mappa ufficiale di Google Maps: per cambiarla sostituisci solo l'indirizzo in src -->
-            <iframe title="Mappa: Hua Ciai Muay Thai su Google Maps" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2915.0901675804653!2d9.21215075786858!3d39.288586843189634!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12e0b5bff628bf13%3A0x4e6106e5b60aadc7!2sHUA%20CIAI%20MUAY%20THAI%20di%20Roberto%20Orru'!5e1!3m2!1sit!2sit!4v1791382809002!5m2!1sit!2sit" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            <!-- Mappa ufficiale di Google Maps: per cambiarla sostituisci solo l'indirizzo in data-src.
+                 Si carica solo con il consenso ai cookie o premendo "Mostra la mappa". -->
+            <iframe title="Mappa: Hua Ciai Muay Thai su Google Maps" data-src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2915.0901675804653!2d9.21215075786858!3d39.288586843189634!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12e0b5bff628bf13%3A0x4e6106e5b60aadc7!2sHUA%20CIAI%20MUAY%20THAI%20di%20Roberto%20Orru'!5e1!3m2!1sit!2sit!4v1791382809002!5m2!1sit!2sit" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            <div class="mappa-ph">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style="color: var(--white);" aria-hidden="true"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.2"/></svg>
+              <p>La mappa è fornita da Google: caricandola, Google può impostare i propri cookie.</p>
+              <button type="button" class="btn btn-white" data-mappa hidden>Mostra la mappa</button>
+              <a class="ext" href="https://www.google.com/maps/search/?api=1&amp;query=HUA%20CIAI%20MUAY%20THAI%20Sinnai" target="_blank" rel="noopener">Apri in Google Maps</a>
+            </div>
           </div>
         </div>
 
@@ -1119,6 +1213,10 @@ window.FX = {
         <span>© 2026 HUA CIAI MUAY THAI · <span id="footer-asd">ASD BODY CLUB KOMBAT</span> — Sinnai (CA)</span>
       </div>
       <div class="kicker">Disciplina · Passione · Tradizione</div>
+      <div class="cc-links" hidden>
+        <button type="button" data-cc-apri>Preferenze cookie</button>
+        <button type="button" data-cc-info>Informativa cookie</button>
+      </div>
     </div>
   </div>
 </footer>
@@ -1889,5 +1987,218 @@ const ORARI = {
   function aggiorna() { attesa = false; b.classList.toggle('on', (window.pageYOffset || 0) > window.innerHeight * 0.9); }
   window.addEventListener('scroll', function () { if (!attesa) { attesa = true; requestAnimationFrame(aggiorna); } }, { passive: true });
   aggiorna();
+})();
+</script>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   PRIVACY E COOKIE — impostazioni
+   gaId → codice di misurazione di Google Analytics 4 (es. 'G-AB12CD34EF').
+          Finché è vuoto le statistiche non esistono e il banner non le propone.
+   versione → aumentala se cambiano i cookie usati: il banner verrà riproposto a tutti.
+   ════════════════════════════════════════════════════════════════ */
+const PRIVACY = {
+  gaId: '',
+  versione: 1,
+  durataMesi: 6,   // dopo quanto tempo richiedere di nuovo il consenso
+};
+
+(function () {
+  'use strict';
+  var CHIAVE = 'hc-consenso';
+  var html = document.documentElement;
+  var conGA = /^G-[A-Z0-9]+$/i.test(PRIVACY.gaId || '');
+  var titolare = (typeof CONTATTI !== 'undefined' && CONTATTI.associazione) || 'ASD Body Club Kombat';
+  var email = (typeof CONTATTI !== 'undefined' && CONTATTI.email) || '';
+  var sede = (typeof CONTATTI !== 'undefined' && CONTATTI.indirizzo) ? CONTATTI.indirizzo.join(', ') : '';
+  var fermo = !!(window.FX && window.FX.fermo);
+
+  /* ── memoria della scelta (localStorage: dato tecnico, non serve consenso) ── */
+  function leggi() {
+    try {
+      var c = JSON.parse(localStorage.getItem(CHIAVE) || 'null');
+      if (!c || c.v !== PRIVACY.versione) return null;
+      if (Date.now() - c.t > PRIVACY.durataMesi * 30.5 * 864e5) return null;
+      return c;
+    } catch (e) { return null; }
+  }
+  function salva(stat, est) {
+    var c = { v: PRIVACY.versione, t: Date.now(), stat: !!(stat && conGA), est: !!est };
+    try { localStorage.setItem(CHIAVE, JSON.stringify(c)); } catch (e) {}
+    return c;
+  }
+
+  /* ── Google Analytics: caricato solo dopo il consenso ── */
+  var gaCaricato = false;
+  function caricaGA() {
+    if (!conGA || gaCaricato) return;
+    gaCaricato = true;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', PRIVACY.gaId);
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(PRIVACY.gaId);
+    document.head.appendChild(s);
+  }
+  function cancellaCookieGA() {
+    var dom = location.hostname.split('.');
+    document.cookie.split(';').forEach(function (c) {
+      var nome = c.split('=')[0].trim();
+      if (!/^_ga/.test(nome)) return;
+      for (var i = 0; i < dom.length; i++) {
+        var d = dom.slice(i).join('.');
+        document.cookie = nome + '=; Max-Age=0; path=/; domain=' + d;
+        document.cookie = nome + '=; Max-Age=0; path=/; domain=.' + d;
+      }
+      document.cookie = nome + '=; Max-Age=0; path=/';
+    });
+  }
+
+  /* ── Mappa Google: caricata con il consenso o con un tocco sul pulsante ── */
+  var mappa = document.querySelector('.mappa');
+  var iframe = mappa && mappa.querySelector('iframe[data-src]');
+  function caricaMappa() {
+    if (!iframe || iframe.getAttribute('src')) return;
+    iframe.setAttribute('src', iframe.getAttribute('data-src'));
+    mappa.classList.add('caricata');
+  }
+  function scaricaMappa() {
+    if (!iframe || !iframe.getAttribute('src')) return;
+    iframe.removeAttribute('src');
+    mappa.classList.remove('caricata');
+  }
+
+  function applica(c, primaVolta) {
+    if (c.est) caricaMappa(); else scaricaMappa();
+    if (c.stat) caricaGA();
+    else if (gaCaricato && !primaVolta) { cancellaCookieGA(); location.reload(); }
+    else cancellaCookieGA();
+  }
+
+  /* ── Banner ── */
+  var banner = null;
+  function testo() {
+    return conGA
+      ? 'Usiamo solo cookie tecnici necessari al sito. Con il tuo consenso useremo anche Google Analytics, per contare le visite in forma aggregata, e Google Maps, per mostrarti la mappa. Puoi cambiare idea quando vuoi da "Preferenze cookie" in fondo alla pagina.'
+      : 'Usiamo solo cookie tecnici necessari al sito. Con il tuo consenso caricheremo anche la mappa di Google Maps, che usa propri cookie. Puoi cambiare idea quando vuoi da "Preferenze cookie" in fondo alla pagina.';
+  }
+  function chiudiBanner() {
+    if (!banner) return;
+    banner.remove(); banner = null; html.classList.remove('cc-on');
+  }
+  function apriBanner(personalizza) {
+    chiudiBanner();
+    var c = leggi() || { stat: false, est: false };
+    banner = document.createElement('div');
+    banner.className = 'cc';
+    banner.setAttribute('role', 'dialog');
+    banner.setAttribute('aria-label', 'Preferenze sui cookie');
+    banner.innerHTML =
+      '<div class="cc-in">' +
+        '<div class="cc-txt"><div class="kicker kicker-white">Privacy e cookie</div><p></p></div>' +
+        '<div class="cc-act">' +
+          '<button type="button" class="btn btn-ghost" data-cc="pers">Personalizza</button>' +
+          '<button type="button" class="btn btn-white" data-cc="no">Rifiuta tutto</button>' +
+          '<button type="button" class="btn btn-white" data-cc="si">Accetta tutto</button>' +
+        '</div>' +
+        '<div class="cc-pref" hidden>' +
+          '<label><span><strong>Necessari</strong></span><input type="checkbox" checked disabled><small>Fanno funzionare il sito e ricordano la tua scelta sui cookie. Sempre attivi.</small></label>' +
+          (conGA ? '<label><span><strong>Statistiche · Google Analytics</strong></span><input type="checkbox" data-cat="stat"><small>Ci dicono quante persone visitano il sito e quali pagine guardano, in forma aggregata.</small></label>' : '') +
+          '<label><span><strong>Contenuti esterni · Google Maps</strong></span><input type="checkbox" data-cat="est"><small>Mostrano la mappa della palestra; Google può impostare propri cookie.</small></label>' +
+        '</div>' +
+      '</div>';
+    var p = banner.querySelector('.cc-txt p');
+    p.textContent = testo() + ' ';
+    var info = document.createElement('button');
+    info.type = 'button'; info.className = 'cc-link'; info.textContent = 'Leggi l\'informativa';
+    info.addEventListener('click', apriInformativa);
+    p.appendChild(info);
+
+    var pref = banner.querySelector('.cc-pref');
+    var stat = banner.querySelector('[data-cat="stat"]'), est = banner.querySelector('[data-cat="est"]');
+    if (stat) stat.checked = !!c.stat;
+    if (est) est.checked = !!c.est;
+    var pers = banner.querySelector('[data-cc="pers"]');
+    function mostraPref() { pref.hidden = false; pers.textContent = 'Salva le scelte'; pers.setAttribute('data-cc', 'salva'); }
+    if (personalizza) mostraPref();
+
+    banner.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-cc]'); if (!b) return;
+      var azione = b.getAttribute('data-cc');
+      if (azione === 'pers') { mostraPref(); (stat || est).focus(); return; }
+      var scelta = azione === 'si' ? salva(true, true)
+                 : azione === 'no' ? salva(false, false)
+                 : salva(stat && stat.checked, est && est.checked);
+      chiudiBanner();
+      applica(scelta, false);
+    });
+    document.body.appendChild(banner);
+    html.classList.add('cc-on');
+  }
+
+  /* ── Informativa (finestra) ── */
+  var dlg = null;
+  function apriInformativa() {
+    if (!dlg) {
+      dlg = document.createElement('dialog');
+      dlg.className = 'cc-dlg';
+      dlg.setAttribute('aria-label', 'Informativa sui cookie');
+      dlg.innerHTML =
+        '<div class="cc-dlg-in">' +
+          '<div class="kicker">Privacy e cookie</div>' +
+          '<h2>Informativa sui cookie</h2>' +
+          '<p>Titolare del trattamento: <strong data-i="titolare"></strong><span data-i="sede"></span>. Per qualsiasi richiesta: <a data-i="email"></a>.</p>' +
+          '<h3>Cookie tecnici</h3>' +
+          '<p>Il sito salva nel tuo browser (localStorage, voce “hc-consenso”) la scelta che fai su questo banner, per non riproporlo a ogni visita. La scelta vale ' + PRIVACY.durataMesi + ' mesi. Non serve il consenso.</p>' +
+          (conGA ?
+          '<h3>Statistiche · Google Analytics 4</h3>' +
+          '<p>Solo se acconsenti, usiamo Google Analytics 4 di Google Ireland Ltd per sapere in forma aggregata quante persone visitano il sito, da quale dispositivo e quali sezioni guardano. Google Analytics 4 non registra l’indirizzo IP completo. Cookie: <em>_ga</em> e <em>_ga_*</em>, durata fino a 2 anni. I dati possono essere trasferiti negli Stati Uniti, nell’ambito dell’EU-U.S. Data Privacy Framework. ' +
+          'Maggiori informazioni: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">privacy di Google</a> · <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">come Google usa i dati dei siti partner</a>.</p>' : '') +
+          '<h3>Contenuti esterni · Google Maps</h3>' +
+          '<p>La mappa nella sezione Contatti è fornita da Google e viene caricata solo se acconsenti o se premi “Mostra la mappa”. Una volta caricata, Google può impostare propri cookie secondo la sua <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">informativa</a>.</p>' +
+          '<h3>Come cambiare la scelta</h3>' +
+          '<p>In qualsiasi momento da “Preferenze cookie” in fondo alla pagina, oppure cancellando i dati del sito dalle impostazioni del browser.</p>' +
+          '<h3>I tuoi diritti</h3>' +
+          '<p>Puoi chiedere al titolare l’accesso, la rettifica, la cancellazione dei tuoi dati, la limitazione o l’opposizione al trattamento (artt. 15–22 GDPR) e proporre reclamo al <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">Garante per la protezione dei dati personali</a>.</p>' +
+          '<div style="margin-top:2rem;display:flex;gap:.6rem;flex-wrap:wrap;">' +
+            '<button type="button" class="btn btn-ghost" data-d="pref">Preferenze cookie</button>' +
+            '<button type="button" class="btn btn-white" data-d="chiudi">Chiudi</button>' +
+          '</div>' +
+        '</div>';
+      dlg.querySelector('[data-i="titolare"]').textContent = titolare;
+      dlg.querySelector('[data-i="sede"]').textContent = sede ? ', ' + sede : '';
+      var a = dlg.querySelector('[data-i="email"]');
+      a.textContent = email; a.href = 'mailto:' + email;
+      dlg.addEventListener('click', function (e) {
+        if (e.target === dlg) { dlg.close(); return; }
+        var b = e.target.closest('[data-d]'); if (!b) return;
+        dlg.close();
+        if (b.getAttribute('data-d') === 'pref') apriBanner(true);
+      });
+      document.body.appendChild(dlg);
+    }
+    if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+  }
+
+  /* ── Collegamenti: footer e pulsante della mappa ── */
+  var links = document.querySelector('.cc-links');
+  if (links) {
+    links.hidden = false;
+    links.querySelector('[data-cc-apri]').addEventListener('click', function () { apriBanner(true); });
+    links.querySelector('[data-cc-info]').addEventListener('click', apriInformativa);
+  }
+  var bMappa = document.querySelector('[data-mappa]');
+  if (bMappa) bMappa.hidden = false;
+  if (bMappa) bMappa.addEventListener('click', function () {
+    var c = leggi();
+    if (c) salva(c.stat, true);   // aggiorna la scelta già fatta; altrimenti la carica solo per questa visita
+    caricaMappa();
+  });
+
+  /* ── Avvio ── */
+  var scelta = leggi();
+  if (scelta) applica(scelta, true);
+  else apriBanner(false);
 })();
 </script>
