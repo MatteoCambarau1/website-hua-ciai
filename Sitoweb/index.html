@@ -1997,8 +1997,8 @@ const ORARI = {
    versione → aumentala se cambiano i cookie usati: il banner verrà riproposto a tutti.
    ════════════════════════════════════════════════════════════════ */
 const PRIVACY = {
-  gaId: '',
-  versione: 1,
+  gaId: 'G-HD969QYYPT',
+  versione: 2,
   durataMesi: 6,   // dopo quanto tempo richiedere di nuovo il consenso
 };
 
@@ -2069,11 +2069,70 @@ const PRIVACY = {
     mappa.classList.remove('caricata');
   }
 
+  var statAttive = false;   // true solo con il consenso alle statistiche
   function applica(c, primaVolta) {
     if (c.est) caricaMappa(); else scaricaMappa();
-    if (c.stat) caricaGA();
-    else if (gaCaricato && !primaVolta) { cancellaCookieGA(); location.reload(); }
+    statAttive = !!c.stat;
+    if (c.stat) { window['ga-disable-' + PRIVACY.gaId] = false; caricaGA(); osservaSezioni(); }
+    else if (gaCaricato && !primaVolta) { window['ga-disable-' + PRIVACY.gaId] = true; cancellaCookieGA(); location.reload(); }
     else cancellaCookieGA();
+  }
+
+  /* ── Eventi GA4: inviati solo con il consenso alle statistiche ── */
+  function evento(nome, parametri) {
+    if (!statAttive || !gaCaricato || typeof window.gtag !== 'function') return;
+    window.gtag('event', nome, parametri || {});
+  }
+  var modulo = document.getElementById('modulo');
+
+  // generate_lead: invio del modulo andato a buon fine (campi obbligatori compilati)
+  if (modulo) modulo.addEventListener('submit', function (e) {
+    if (!modulo.checkValidity()) return;
+    var via = (e.submitter && e.submitter.getAttribute('data-via')) || 'mail';
+    var sel = document.getElementById('argomento');
+    var opz = sel && sel.options[sel.selectedIndex];
+    evento('generate_lead', {
+      method: via === 'wa' ? 'whatsapp' : 'email',
+      interesse: opz ? opz.text.trim() : '',
+    });
+  });
+
+  // contact_click, social_click, map_open, cta_click: un solo ascoltatore per tutta la pagina
+  var SOCIAL = { instagram: 'instagram', facebook: 'facebook', youtube: 'youtube', tiktok: 'tiktok' };
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || (modulo && modulo.contains(a))) return;
+    var href = a.getAttribute('href') || '';
+    var testo = (a.textContent || '').replace(/\s+/g, ' ').trim();
+
+    if (/^mailto:/i.test(href)) return evento('contact_click', { method: 'email' });
+    if (/^tel:/i.test(href)) return evento('contact_click', { method: 'phone' });
+    if (/(wa\.me|whatsapp\.com)/i.test(href)) return evento('contact_click', { method: 'whatsapp' });
+    if (/google\.[a-z.]+\/maps/i.test(href)) return evento('map_open');
+    if (href === '#modulo') return evento('cta_click', { label: testo });
+
+    var fonte = (href + ' ' + testo).toLowerCase();
+    for (var k in SOCIAL) if (fonte.indexOf(k) !== -1) return evento('social_click', { platform: SOCIAL[k] });
+  });
+
+  // section_view: una volta per visita, quando la sezione entra nei primi 2/3 dello schermo
+  // (margine invece di una soglia in %: le sezioni più alte dello schermo la raggiungerebbero tardi o mai)
+  var sezioniViste = {}, osservatore = null;
+  function osservaSezioni() {
+    if (osservatore || !('IntersectionObserver' in window)) return;
+    osservatore = new IntersectionObserver(function (voci) {
+      voci.forEach(function (v) {
+        var id = v.target.id;
+        if (!v.isIntersecting || sezioniViste[id] || !statAttive) return;
+        sezioniViste[id] = true;
+        evento('section_view', { section: id });
+        osservatore.unobserve(v.target);
+      });
+    }, { rootMargin: '0px 0px -33% 0px' });
+    ['storia', 'maestro', 'corsi', 'orari', 'galleria', 'contatti'].forEach(function (id) {
+      var s = document.getElementById(id);
+      if (s) osservatore.observe(s);
+    });
   }
 
   /* ── Banner ── */
