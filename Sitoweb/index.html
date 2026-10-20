@@ -1153,8 +1153,6 @@ window.FX = {
         <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3" style="display:flex; flex-wrap:wrap; gap:.75rem 1.5rem;">
           <a href="#" class="nav-link">Instagram</a>
           <a href="#" class="nav-link">Facebook</a>
-          <a href="#" class="nav-link">YouTube</a>
-          <a href="#" class="nav-link">TikTok</a>
         </div>
       </div>
 
@@ -2256,7 +2254,7 @@ const PRIVACY = {
   });
 
   // contact_click, social_click, map_open, cta_click: un solo ascoltatore per tutta la pagina
-  var SOCIAL = { instagram: 'instagram', facebook: 'facebook', youtube: 'youtube', tiktok: 'tiktok' };
+  var SOCIAL = { instagram: 'instagram', facebook: 'facebook' };
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[href]');
     if (!a || (modulo && modulo.contains(a))) return;
