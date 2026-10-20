@@ -384,6 +384,7 @@ window.FX = {
   .rows .k { font-size: .72rem; font-weight: 600; color: var(--muted-2); letter-spacing: .14em; font-variant-numeric: tabular-nums; }
   .rows .v { font-size: .92rem; color: var(--light); line-height: 1.55; }
   .rows .v strong { color: var(--white); font-weight: 500; }
+  .perc-more { margin-top: 1.25rem; }
   .sub-head { display: flex; align-items: baseline; gap: 1.25rem; margin: 4.5rem 0 1.5rem; }
   .sub-head h3 { font-size: 1.35rem; font-weight: 600; }
   .sub-head .rule { flex: 1; height: 1px; background: var(--line); }
@@ -963,6 +964,11 @@ window.FX = {
       <p class="mt-5 text-[15px] leading-relaxed" style="color: var(--muted);">
         Dalla ricerca tecnica alla preparazione atletica, dalla tradizione del Wai Khru
         alle competizioni agonistiche: qui ogni allenamento è un percorso di crescita personale.
+      </p>
+      <p class="mt-5 text-[15px] leading-relaxed" style="color: var(--muted);">
+        Dal 2012 la scuola organizza il <span class="text-white">Trofeo Hua Ciai Muay Thai</span>, evento
+        internazionale tra i più seguiti in Sardegna: i nostri atleti si sono confrontati con rappresentative
+        spagnole, olandesi, svedesi e slovacche, e nel 2024 si è arrivati alla decima edizione.
       </p>
 
       <div class="mt-10 space-y-5">
@@ -1595,8 +1601,8 @@ const CONTATTI = {
 
 /* ── STORIA ── */
 const PALESTRA = {
-  annoFondazione: '2004',        // ← da confermare
-  affiliazioni: [],              // ← es. ['FIGHT1', 'CONI', 'IFMA']
+  annoFondazione: '2010',        // anno di fondazione della scuola Hua Ciai (dal curriculum del Maestro)
+  affiliazioni: ['FEDERKOMBAT'], // ← per aggiungerne altre: ['FEDERKOMBAT', 'CONI']
 };
 
 /* ── MAESTRO ── */
@@ -1604,8 +1610,23 @@ const MAESTRO = {
   nome:  'Roberto Orrù',
   ruolo: 'Fondatore & Head Coach',
   foto:  '',                     // ← es. 'foto/maestro.jpg'
-  bio:   '',                     // ← presentazione breve (4-5 righe)
-  percorso: [                    // ← una riga per tappa: { anno: '2004', testo: '...' }
+  bio:   'Cagliaritano, inizia nel 1994 con il pugilato; poi la Kick Boxing e, dal 2003, la Muay Thai, che non ha più lasciato. Tre volte Campione Italiano, sul podio ai Mondiali nel 2011 e nel 2015, Tecnico Federale Federkombat. Nel 2010 fonda la scuola Hua Ciai Muay Thai, dove ha formato e accompagnato tanti atleti a risultati importanti in Italia e all\'estero.',
+  /* PERCORSO: una riga per tappa, in ordine di anno.
+     top: true → la riga resta sempre visibile; le altre si aprono con "Percorso completo". */
+  percorso: [
+    { anno: '1994', testo: 'Inizia con il pugilato.' },
+    { anno: '1995', testo: 'Affianca alla boxe la Kick Boxing, che pratica fino al 2003.' },
+    { anno: '1997', testo: 'Agonismo nella Kick Boxing: quattro volte Campione Regionale e terzo posto ai Campionati Italiani Cinture Nere.' },
+    { anno: '2003', testo: 'Diploma di Allenatore di Kick Boxing. Inizia la Muay Thai, che pratica da agonista fino al 2015, e insegna Kick Boxing all\'ASD Body Club Kombat.' },
+    { anno: '2004', testo: '<strong>Campione Italiano di Muay Thai</strong>, titolo che vince anche nel 2005 e nel 2013.', top: true },
+    { anno: '2008', testo: 'Primo dei diplomi per l\'insegnamento della Muay Thai, che da allora insegna all\'ASD Body Club Kombat.' },
+    { anno: '2010', testo: '<strong>Fonda la scuola Hua Ciai Muay Thai</strong>, oggi conosciuta in tutta Italia.', top: true },
+    { anno: '2011', testo: '<strong>Secondo posto ai Campionati Mondiali.</strong>', top: true },
+    { anno: '2012', testo: 'Prima edizione del Trofeo Hua Ciai Muay Thai.' },
+    { anno: '2015', testo: 'Terzo posto ai Campionati Mondiali.' },
+    { anno: '2016', testo: 'Accompagna e segue la selezione Nazionale professionisti nel circuito Fight Net, in Grecia e in Thailandia.' },
+    { anno: '2022', testo: '<strong>Tecnico Federale Federkombat</strong>, diploma conseguito al Centro Olimpico di Roma.', top: true },
+    { anno: '2024', testo: 'Decima edizione del Trofeo Hua Ciai Muay Thai.' },
   ],
 };
 
@@ -1706,11 +1727,35 @@ const ORARI = {
     { anno: 'Anno', ph: 'Esperienze in Thailandia' },
     { anno: 'Anno', ph: 'Risultati sportivi' },
   ];
-  perc.forEach(r => {
-    const row = el('div');
-    row.append(el('span', 'k' + (r.ph ? ' todo' : ''), r.anno), fill(el('span', 'v'), r.testo, r.ph + ': da inserire'));
-    $('maestro-percorso').appendChild(row);
-  });
+  const boxPerc = $('maestro-percorso');
+  const altre = perc.filter(r => !r.top && !r.ph).length;
+  const conTop = perc.some(r => r.top);
+  let percAperto = false;
+  function disegnaPercorso() {
+    boxPerc.innerHTML = '';
+    perc.filter(r => percAperto || !conTop || r.top || r.ph).forEach(r => {
+      const row = el('div');
+      const v = el('span', 'v');
+      if (r.testo) v.innerHTML = r.testo; else fill(v, '', r.ph + ': da inserire');
+      row.append(el('span', 'k' + (r.ph ? ' todo' : ''), r.anno), v);
+      boxPerc.appendChild(row);
+    });
+  }
+  disegnaPercorso();
+  if (conTop && altre) {
+    const b = el('button', 'btn btn-ghost perc-more', 'Percorso completo');
+    b.type = 'button';
+    b.setAttribute('aria-expanded', 'false');
+    b.setAttribute('aria-controls', 'maestro-percorso');
+    b.addEventListener('click', () => {
+      percAperto = !percAperto;
+      b.textContent = percAperto ? 'Mostra meno' : 'Percorso completo';
+      b.setAttribute('aria-expanded', String(percAperto));
+      disegnaPercorso();
+      if (!percAperto) boxPerc.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    boxPerc.after(b);
+  }
 
   /* Istruttori */
   const ist = ISTRUTTORI.length ? ISTRUTTORI : [{}, {}];
