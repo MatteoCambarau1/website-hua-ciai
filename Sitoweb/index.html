@@ -300,6 +300,7 @@ window.FX = {
     display: block; margin-top: .3rem; color: var(--muted);
     font-size: .62rem; letter-spacing: .16em;
   }
+  .pg-more { margin-top: 1.25rem; justify-content: center; }
   @keyframes pgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .pg-item { animation: none; } }
 
@@ -791,6 +792,7 @@ window.FX = {
     /* Galleria, vista "Tutte": due foto per categoria; le altre con "Solo questa →" */
     #pg-body.anteprima .pg-grid > .pg-item:nth-child(n+3) { display: none; }
     #pg-body.anteprima .pg-item.big { grid-column: auto; grid-row: auto; }
+    #pg-body.anteprima .pg-more { display: none; }
 
     /* Immagini segnaposto meno alte */
     .logo-img.large { height: 200px; }
@@ -1228,10 +1230,13 @@ window.FX = {
    CATEGORIE: l'ordine qui è l'ordine dei filtri e dei gruppi.
    FOTO: una riga per foto.
      cat    → id di una categoria qui sotto
-     titolo → didascalia
+     titolo → didascalia (facoltativa: senza, la foto non ha scritta)
      src    → percorso o URL dell'immagine, es. 'foto/sparring-01.jpg'
               (se manca, viene mostrato un riquadro segnaposto)
      big    → true per una foto in evidenza (occupa 2x2)
+
+   LIMITE: quante foto mostrare per categoria prima di "Mostra tutte".
+   Nel riquadro ingrandito si scorrono comunque tutte.
    ════════════════════════════════════════════════════════════════ */
 const CATEGORIE = [
   { id: 'allenamenti',   nome: 'Allenamenti' },
@@ -1241,44 +1246,46 @@ const CATEGORIE = [
   { id: 'palestra',      nome: 'La Palestra' },
 ];
 
+const LIMITE = 9;
+
 const FOTO = [
   { cat: 'allenamenti',   titolo: 'Lavoro ai sacchi', big: true },
   { cat: 'allenamenti',   titolo: 'Pao con il Maestro' },
   { cat: 'allenamenti',   titolo: 'Tecnica' },
   { cat: 'allenamenti',   titolo: 'Preparazione atletica' },
 
-  { cat: 'combattimenti', titolo: 'Il gancio', src: 'foto/combattimenti/match-01.jpg', big: true },
-  { cat: 'combattimenti', titolo: 'Calcio alto', src: 'foto/combattimenti/match-02.jpg' },
-  { cat: 'combattimenti', titolo: 'Ginocchiata', src: 'foto/combattimenti/match-03.jpg' },
-  { cat: 'combattimenti', titolo: 'La vittoria', src: 'foto/combattimenti/match-04.jpg' },
-  { cat: 'combattimenti', titolo: 'Calcio al corpo', src: 'foto/combattimenti/match-05.jpg' },
-  { cat: 'combattimenti', titolo: 'Ginocchiata in clinch', src: 'foto/combattimenti/match-06.jpg' },
-  { cat: 'combattimenti', titolo: 'Clinch all\'angolo', src: 'foto/combattimenti/match-07.jpg' },
-  { cat: 'combattimenti', titolo: 'Il verdetto', src: 'foto/combattimenti/match-08.jpg' },
-  { cat: 'combattimenti', titolo: 'Calcio circolare', src: 'foto/combattimenti/match-09.jpg' },
-  { cat: 'combattimenti', titolo: 'Colpo di ginocchio', src: 'foto/combattimenti/match-10.jpg' },
-  { cat: 'combattimenti', titolo: 'Clinch', src: 'foto/combattimenti/match-11.jpg' },
-  { cat: 'combattimenti', titolo: 'Corpo a corpo', src: 'foto/combattimenti/match-12.jpg' },
-  { cat: 'combattimenti', titolo: 'Faccia a faccia', src: 'foto/combattimenti/match-13.jpg' },
-  { cat: 'combattimenti', titolo: 'L\'ingresso', src: 'foto/combattimenti/match-14.jpg' },
-  { cat: 'combattimenti', titolo: 'Al tappeto', src: 'foto/combattimenti/match-15.jpg' },
-  { cat: 'combattimenti', titolo: 'Calcio d\'incontro', src: 'foto/combattimenti/match-16.jpg' },
-  { cat: 'combattimenti', titolo: 'Calcio sotto i riflettori', src: 'foto/combattimenti/match-17.jpg' },
-  { cat: 'combattimenti', titolo: 'Ginocchiata volante', src: 'foto/combattimenti/match-18.jpg' },
-  { cat: 'combattimenti', titolo: 'Scambio', src: 'foto/combattimenti/match-19.jpg' },
-  { cat: 'combattimenti', titolo: 'Scambio sul ring', src: 'foto/combattimenti/match-20.jpg' },
-  { cat: 'combattimenti', titolo: 'Sfida all\'aperto', src: 'foto/combattimenti/match-21.jpg' },
-  { cat: 'combattimenti', titolo: 'Calcio', src: 'foto/combattimenti/match-22.jpg' },
-  { cat: 'combattimenti', titolo: 'Sotto gli occhi dell\'arbitro', src: 'foto/combattimenti/match-23.jpg' },
-  { cat: 'combattimenti', titolo: 'Diretto', src: 'foto/combattimenti/match-24.jpg' },
-  { cat: 'combattimenti', titolo: 'Serie di pugni', src: 'foto/combattimenti/match-25.jpg' },
-  { cat: 'combattimenti', titolo: 'Match femminile', src: 'foto/combattimenti/match-26.jpg' },
-  { cat: 'combattimenti', titolo: 'Guardia alta', src: 'foto/combattimenti/match-27.jpg' },
-  { cat: 'combattimenti', titolo: 'Clinch a bordo ring', src: 'foto/combattimenti/match-28.jpg' },
-  { cat: 'combattimenti', titolo: 'Il conteggio', src: 'foto/combattimenti/match-29.jpg' },
-  { cat: 'combattimenti', titolo: 'All\'angolo', src: 'foto/combattimenti/match-30.jpg' },
-  { cat: 'combattimenti', titolo: 'Presa al collo', src: 'foto/combattimenti/match-31.jpg' },
-  { cat: 'combattimenti', titolo: 'Tecnica di calcio', src: 'foto/combattimenti/match-32.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-01.jpg', big: true },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-02.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-03.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-04.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-05.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-06.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-07.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-08.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-09.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-10.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-11.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-12.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-13.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-14.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-15.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-16.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-17.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-18.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-19.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-20.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-21.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-22.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-23.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-24.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-25.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-26.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-27.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-28.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-29.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-30.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-31.jpg' },
+  { cat: 'combattimenti', src: 'foto/combattimenti/match-32.jpg' },
 
   { cat: 'eventi',        titolo: 'Wai Khru' },
   { cat: 'eventi',        titolo: 'Premiazione' },
@@ -1310,6 +1317,7 @@ const FOTO = [
   let visibili = [];   // foto nell'ordine mostrato, per il lightbox
   let corrente = 0;
   let ultimoFocus = null;
+  const aperte = new Set();   // categorie espanse con "Mostra tutte"
 
   function chip(id, nome, n) {
     const b = document.createElement('button');
@@ -1320,20 +1328,21 @@ const FOTO = [
     return b;
   }
 
-  function tile(f, i) {
+  function tile(f, i, idx) {
     const b = document.createElement('button');
     b.type = 'button';
     const bg = bgOf(f);
     b.className = 'gallery-item pg-item' + (f.big ? ' big' : '') + (bg ? '' : ' ph-' + (i % 6 + 1));
     if (bg) b.style.backgroundImage = bg;
     b.style.animationDelay = Math.min(i, 8) * 35 + 'ms';
-    b.setAttribute('aria-label', f.titolo + ' — ' + nomeCat[f.cat] + (bg ? '' : ' (foto in arrivo)'));
-    const l = document.createElement('span');
-    l.className = 'label';
-    l.textContent = f.titolo;
-    if (!bg) { const s = document.createElement('small'); s.textContent = 'Foto in arrivo'; l.appendChild(s); }
-    b.appendChild(l);
-    const idx = visibili.push(f) - 1;
+    b.setAttribute('aria-label', (f.titolo ? f.titolo + ' — ' : 'Foto ' + (idx + 1) + ' — ') + nomeCat[f.cat] + (bg ? '' : ' (foto in arrivo)'));
+    if (f.titolo || !bg) {
+      const l = document.createElement('span');
+      l.className = 'label';
+      l.textContent = f.titolo || '';
+      if (!bg) { const s = document.createElement('small'); s.textContent = 'Foto in arrivo'; l.appendChild(s); }
+      b.appendChild(l);
+    }
     b.addEventListener('click', () => apri(idx, b));
     return b;
   }
@@ -1366,8 +1375,23 @@ const FOTO = [
       }
       const grid = document.createElement('div');
       grid.className = 'pg-grid';
-      foto.forEach((f, i) => grid.appendChild(tile(f, i)));
+      const inizio = visibili.length;
+      visibili.push(...foto);   // il lightbox scorre tutte le foto, anche quelle nascoste
+      const mostrate = aperte.has(c.id) ? foto : foto.slice(0, LIMITE);
+      mostrate.forEach((f, i) => grid.appendChild(tile(f, i, inizio + i)));
       g.append(head, grid);
+      if (foto.length > LIMITE) {
+        const m = document.createElement('button');
+        m.type = 'button'; m.className = 'btn btn-ghost pg-more';
+        const aperta = aperte.has(c.id);
+        m.setAttribute('aria-expanded', String(aperta));
+        m.textContent = aperta ? 'Mostra meno' : 'Mostra tutte le ' + foto.length + ' foto';
+        m.addEventListener('click', () => {
+          if (aperta) { aperte.delete(c.id); render(); g.scrollIntoView({ behavior: 'smooth' }); }
+          else { aperte.add(c.id); render(); }
+        });
+        g.appendChild(m);
+      }
       body.appendChild(g);
     });
   }
@@ -1378,7 +1402,7 @@ const FOTO = [
     stage.className = 'lb-stage' + (bg ? '' : ' is-ph ph-' + (corrente % 6 + 1));
     stage.style.backgroundImage = bg;
     cap.innerHTML = '';
-    cap.append(f.titolo + ' · ' + nomeCat[f.cat]);
+    cap.append(f.titolo ? f.titolo + ' · ' + nomeCat[f.cat] : nomeCat[f.cat]);
     const n = document.createElement('span');
     n.textContent = (corrente + 1) + ' / ' + visibili.length;
     cap.appendChild(n);
