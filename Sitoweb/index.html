@@ -312,10 +312,12 @@ window.FX = {
 
   /* ═══ GALLERIA · CILINDRO 3D (vista iniziale) ═══ */
   #galleria { overflow-x: clip; }
-  .pg-cil { --w: clamp(150px, 16vw, 230px); --r: 660px; --avanti: 150px; margin-top: 2.5rem; }
+  /* Cilindro visto da dentro: le foto guardano verso il centro, quella davanti
+     è la più lontana (--fondo) e quelle ai lati vengono verso chi guarda. */
+  .pg-cil { --w: clamp(160px, 18vw, 260px); --r: 700px; --fondo: 320px; margin-top: 2.5rem; }
   .cil-scena {
     position: relative; width: 100vw; margin-left: calc(50% - 50vw);
-    height: calc(var(--w) * 1.45 + 4rem);
+    height: calc(var(--w) * 1.5 + 1.5rem);
     perspective: 1300px; perspective-origin: 50% 50%;
     overflow: hidden; touch-action: pan-y; cursor: grab;
     -webkit-user-select: none; user-select: none;
@@ -330,13 +332,14 @@ window.FX = {
     width: var(--w); aspect-ratio: 4 / 5; padding: 0; border: 0; cursor: pointer;
     border-radius: 22px; background-color: var(--ash);
     background-size: cover; background-position: center;
-    transform: rotateY(var(--a)) translateZ(var(--r));
+    transform: rotateY(var(--a)) translateZ(calc(var(--r) * -1));
     -webkit-backface-visibility: hidden; backface-visibility: hidden;
   }
   .cil-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   .pg-cil > .pg-more, #pg-body > .pg-more { display: flex; margin: 1.5rem auto 0; width: max-content; }
+  .pg-group > .pg-more { display: inline-flex; }
   @media (max-width: 639.98px) {
-    .pg-cil { --w: 40vw; --avanti: 90px; margin-top: 1.75rem; }
+    .pg-cil { --w: 40vw; --fondo: 210px; margin-top: 1.75rem; }
     .cil-scena { perspective: 900px; }
     .cil-card { border-radius: 16px; }
   }
@@ -829,6 +832,11 @@ window.FX = {
     .corso-btn .quando { display: block; margin-top: .3rem; font-size: .72rem; font-weight: 400; letter-spacing: .04em; color: var(--muted); }
     .corso.aperto .corso-btn .quando { display: none; }
 
+
+    /* Galleria, vista "Tutte": due foto per categoria; le altre con "Solo questa →" */
+    #pg-body.anteprima .pg-grid > .pg-item:nth-child(n+3) { display: none; }
+    #pg-body.anteprima .pg-item.big { grid-column: auto; grid-row: auto; }
+    #pg-body.anteprima .pg-more { display: none; }
 
     /* Immagini segnaposto meno alte */
     .logo-img.large { height: 200px; }
@@ -1359,6 +1367,7 @@ const CATEGORIE = [
 ];
 
 const MAX_CILINDRO = 16;
+const LIMITE = 9;   // sul telefono (niente cilindro): foto per categoria prima di "Mostra tutte"
 
 const FOTO = [
   { cat: 'allenamenti', src: 'foto/allenamenti/allenamento-01.jpg', big: true, cilindro: true },
@@ -1493,6 +1502,9 @@ const FOTO = [
   const FERMO = !!(window.FX && window.FX.fermo);   // "riduci movimento": solo griglia
   let griglia = FERMO;   // false = cilindro che ruota, true = griglia statica
   let fermaCilindro = null;
+  const aperte = new Set();   // telefono: categorie aperte con "Mostra tutte"
+  const mqTel = window.matchMedia('(max-width: 639.98px)');   // sul telefono niente cilindro
+  mqTel.addEventListener('change', () => render());
 
   function chip(id, nome, n) {
     const b = document.createElement('button');
@@ -1535,7 +1547,7 @@ const FOTO = [
     const n = foto.length, passo = 360 / n;
     let ang = 0, vel = 0, velMeta = 1, raf = 0, ultimo = 0;
     let presa = null, mosso = false;
-    const GRADI_AL_SECONDO = 8;
+    const GRADI_AL_SECONDO = 5;   // velocità di rotazione
 
     foto.forEach((f, i) => {
       const c = document.createElement('button');
@@ -1559,7 +1571,7 @@ const FOTO = [
       if (w) wrap.style.setProperty('--r', Math.round(w / 2 / Math.tan(Math.PI / n) * 1.12) + 'px');
     }
     function disegna() {
-      anello.style.transform = 'translateZ(calc(var(--avanti) - var(--r))) rotateY(' + ang + 'deg)';
+      anello.style.transform = 'translateZ(calc(var(--r) - var(--fondo))) rotateY(' + ang + 'deg)';
     }
     function frame(t) {
       const dt = ultimo ? Math.min(t - ultimo, 50) / 1000 : 0;
@@ -1644,7 +1656,7 @@ const FOTO = [
       sulCilindro = [];
       for (let i = 0; liste.some(l => l[i]); i++) liste.forEach(l => { if (l[i]) sulCilindro.push(l[i]); });
     } else sulCilindro = tutteQui.filter(f => f.src).slice(0, MAX_CILINDRO);
-    if (!griglia && sulCilindro.length >= 6) {
+    if (!griglia && !mqTel.matches && sulCilindro.length >= 6) {
       visibili = tutteQui;   // dal cilindro, nel riquadro ingrandito si scorrono tutte
       if (attiva !== 'tutte') {
         const head = document.createElement('div');
@@ -1684,11 +1696,21 @@ const FOTO = [
       grid.className = 'pg-grid';
       const inizio = visibili.length;
       visibili.push(...foto);
-      foto.forEach((f, i) => grid.appendChild(tile(f, i, inizio + i)));
+      // sul telefono: anteprima di LIMITE foto per categoria, come prima del cilindro
+      const tel = mqTel.matches;
+      const mostrate = tel && !aperte.has(c.id) ? foto.slice(0, LIMITE) : foto;
+      mostrate.forEach((f, i) => grid.appendChild(tile(f, i, inizio + i)));
       g.append(head, grid);
+      if (tel && foto.length > LIMITE) {
+        const aperta = aperte.has(c.id);
+        g.appendChild(pulsante(aperta ? 'Mostra meno' : 'Mostra tutte le ' + foto.length + ' foto', aperta, () => {
+          if (aperta) { aperte.delete(c.id); render(); g.scrollIntoView({ behavior: 'smooth' }); }
+          else { aperte.add(c.id); render(); }
+        }));
+      }
       body.appendChild(g);
     });
-    if (!FERMO) {
+    if (!FERMO && !mqTel.matches) {
       body.appendChild(pulsante('Mostra meno', true, () => {
         griglia = false; render();
         document.getElementById('galleria').scrollIntoView({ behavior: 'smooth' });
