@@ -339,8 +339,8 @@ window.FX = {
   .pg-cil > .pg-more, #pg-body > .pg-more { display: flex; margin: 1.5rem auto 0; width: max-content; }
   .pg-group > .pg-more { display: inline-flex; }
   @media (max-width: 639.98px) {
-    .pg-cil { --w: 40vw; --fondo: 210px; margin-top: 1.75rem; }
-    .cil-scena { perspective: 900px; }
+    .pg-cil { --w: 52vw; --fondo: 300px; margin-top: 1.5rem; }
+    .cil-scena { perspective: 850px; height: calc(var(--w) * 1.35 + 1rem); }
     .cil-card { border-radius: 16px; }
   }
   @keyframes pgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -832,11 +832,6 @@ window.FX = {
     .corso-btn .quando { display: block; margin-top: .3rem; font-size: .72rem; font-weight: 400; letter-spacing: .04em; color: var(--muted); }
     .corso.aperto .corso-btn .quando { display: none; }
 
-
-    /* Galleria, vista "Tutte": due foto per categoria; le altre con "Solo questa →" */
-    #pg-body.anteprima .pg-grid > .pg-item:nth-child(n+3) { display: none; }
-    #pg-body.anteprima .pg-item.big { grid-column: auto; grid-row: auto; }
-    #pg-body.anteprima .pg-more { display: none; }
 
     /* Immagini segnaposto meno alte */
     .logo-img.large { height: 200px; }
@@ -1367,7 +1362,6 @@ const CATEGORIE = [
 ];
 
 const MAX_CILINDRO = 16;
-const LIMITE = 9;   // sul telefono (niente cilindro): foto per categoria prima di "Mostra tutte"
 
 const FOTO = [
   { cat: 'allenamenti', src: 'foto/allenamenti/allenamento-01.jpg', big: true, cilindro: true },
@@ -1502,9 +1496,7 @@ const FOTO = [
   const FERMO = !!(window.FX && window.FX.fermo);   // "riduci movimento": solo griglia
   let griglia = FERMO;   // false = cilindro che ruota, true = griglia statica
   let fermaCilindro = null;
-  const aperte = new Set();   // telefono: categorie aperte con "Mostra tutte"
-  const mqTel = window.matchMedia('(max-width: 639.98px)');   // sul telefono niente cilindro
-  mqTel.addEventListener('change', () => render());
+  const mqTel = window.matchMedia('(max-width: 639.98px)');   // telefono: cilindro più lento
 
   function chip(id, nome, n) {
     const b = document.createElement('button');
@@ -1547,7 +1539,8 @@ const FOTO = [
     const n = foto.length, passo = 360 / n;
     let ang = 0, vel = 0, velMeta = 1, raf = 0, ultimo = 0;
     let presa = null, mosso = false;
-    const GRADI_AL_SECONDO = 5;   // velocità di rotazione
+    // velocità di rotazione (gradi al secondo): più lenta sul telefono, dove lo schermo è piccolo
+    const velocita = () => (mqTel.matches ? 3 : 5);
 
     foto.forEach((f, i) => {
       const c = document.createElement('button');
@@ -1577,7 +1570,7 @@ const FOTO = [
       const dt = ultimo ? Math.min(t - ultimo, 50) / 1000 : 0;
       ultimo = t;
       vel += (velMeta - vel) * Math.min(1, dt * 3);
-      if (!presa && !lb.classList.contains('open')) ang -= vel * GRADI_AL_SECONDO * dt;
+      if (!presa && !lb.classList.contains('open')) ang -= vel * velocita() * dt;
       disegna();
       raf = requestAnimationFrame(frame);
     }
@@ -1656,7 +1649,7 @@ const FOTO = [
       sulCilindro = [];
       for (let i = 0; liste.some(l => l[i]); i++) liste.forEach(l => { if (l[i]) sulCilindro.push(l[i]); });
     } else sulCilindro = tutteQui.filter(f => f.src).slice(0, MAX_CILINDRO);
-    if (!griglia && !mqTel.matches && sulCilindro.length >= 6) {
+    if (!griglia && sulCilindro.length >= 6) {
       visibili = tutteQui;   // dal cilindro, nel riquadro ingrandito si scorrono tutte
       if (attiva !== 'tutte') {
         const head = document.createElement('div');
@@ -1696,21 +1689,11 @@ const FOTO = [
       grid.className = 'pg-grid';
       const inizio = visibili.length;
       visibili.push(...foto);
-      // sul telefono: anteprima di LIMITE foto per categoria, come prima del cilindro
-      const tel = mqTel.matches;
-      const mostrate = tel && !aperte.has(c.id) ? foto.slice(0, LIMITE) : foto;
-      mostrate.forEach((f, i) => grid.appendChild(tile(f, i, inizio + i)));
+      foto.forEach((f, i) => grid.appendChild(tile(f, i, inizio + i)));
       g.append(head, grid);
-      if (tel && foto.length > LIMITE) {
-        const aperta = aperte.has(c.id);
-        g.appendChild(pulsante(aperta ? 'Mostra meno' : 'Mostra tutte le ' + foto.length + ' foto', aperta, () => {
-          if (aperta) { aperte.delete(c.id); render(); g.scrollIntoView({ behavior: 'smooth' }); }
-          else { aperte.add(c.id); render(); }
-        }));
-      }
       body.appendChild(g);
     });
-    if (!FERMO && !mqTel.matches) {
+    if (!FERMO) {
       body.appendChild(pulsante('Mostra meno', true, () => {
         griglia = false; render();
         document.getElementById('galleria').scrollIntoView({ behavior: 'smooth' });
