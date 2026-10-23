@@ -997,6 +997,25 @@ window.FX = {
   .fx-progress { background: var(--accent); }
   .tt-day.fx-today::before { background: var(--accent); }
   /* ═══ fine TEMA CHIARO ═══ */
+
+  /* ════════════════════════════════════════════════════════════════
+     BACHECA — locandine di avvisi e prossimi eventi
+     ════════════════════════════════════════════════════════════════ */
+  .nv-griglia { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; }
+  .nv-poster {
+    display: block; width: min(100%, 440px); padding: 0; border: 0; cursor: zoom-in; background: var(--ash);
+    border-radius: 18px; overflow: hidden; box-shadow: 0 18px 40px rgba(43,37,32,.16);
+  }
+  .nv-griglia.molte .nv-poster { width: min(100%, 340px); }
+  .nv-poster img { display: block; width: 100%; height: auto; }
+  .nv-dlg { padding: 0; border: 0; background: transparent; max-width: min(92vw, 720px); max-height: 92vh; overflow: visible; }
+  .nv-dlg::backdrop { background: rgba(24,19,15,.92); }
+  .nv-dlg img { display: block; max-width: 100%; max-height: 88vh; width: auto; height: auto; border-radius: 12px; }
+  .nv-dlg .nv-dlg-x { position: fixed; top: 1rem; right: 1rem; color: #fff; border-color: rgba(255,255,255,.35); }
+  @media (max-width: 639.98px) {
+    #novita { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+  }
+
 </style>
 
 <!-- ═══════════ HEADER ═══════════ -->
@@ -1006,6 +1025,7 @@ window.FX = {
       <img src="logo.png" class="logo-img" alt="Hua Ciai Muay Thai">
     </a>
     <nav class="nav-desktop" aria-label="Sezioni">
+      <a href="#novita" class="nav-link" data-novita>Bacheca</a>
       <a href="#storia" class="nav-link">Storia</a>
       <a href="#maestro" class="nav-link">Maestro</a>
       <a href="#corsi" class="nav-link">Corsi</a>
@@ -1019,6 +1039,7 @@ window.FX = {
     </button>
   </div>
   <nav class="nav-mobile" id="nav-mobile" aria-label="Sezioni">
+    <a href="#novita" class="nav-link" data-novita>Bacheca</a>
     <a href="#storia" class="nav-link">Storia</a>
     <a href="#maestro" class="nav-link">Maestro</a>
     <a href="#corsi" class="nav-link">Corsi</a>
@@ -1056,6 +1077,29 @@ window.FX = {
   </div>
 
 </section>
+
+<!-- ═══════════ BACHECA ═══════════
+     Le locandine si cambiano nella lista BACHECA nello script "BACHECA" in fondo alla pagina.
+     Se non ci sono novità in corso la sezione (e la voce di menu) spariscono da sole. -->
+<section id="novita" class="py-20" style="background: var(--coal); border-bottom: 1px solid var(--line);" hidden>
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-10">
+      <div>
+        <div class="kicker mb-4">Bacheca</div>
+        <h2 class="display text-3xl md:text-4xl leading-tight">Avvisi e prossimi eventi.</h2>
+      </div>
+    </div>
+    <div id="nv-body"></div>
+  </div>
+</section>
+
+<!-- Locandina ingrandita -->
+<dialog class="nv-dlg" id="nv-dlg" aria-label="Locandina ingrandita">
+  <button type="button" class="lb-btn nv-dlg-x" aria-label="Chiudi">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="1.6"/></svg>
+  </button>
+  <img alt="">
+</dialog>
 
 <!-- ═══════════ STORIA ═══════════ -->
 <section id="storia" class="py-28" style="background: var(--black);">
@@ -1336,6 +1380,56 @@ window.FX = {
     </div>
   </div>
 </footer>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   BACHECA — locandine di avvisi e prossimi eventi, in cima alla pagina.
+   Una riga per locandina:
+     immagine → percorso del file, es. 'foto/novita/chiusura-natale.jpg'
+     titolo   → descrizione breve (non si vede: serve a chi usa lettori di schermo)
+     scade    → 'AAAA-MM-GG': dal giorno dopo la locandina sparisce da sola (facoltativo)
+   Se non ci sono locandine in corso, la sezione e la voce di menu si nascondono.
+   ════════════════════════════════════════════════════════════════ */
+const BACHECA = [
+  { immagine: 'foto/novita/bmt-fight-2-match.jpg', titolo: 'BMT Fight 2 — Bellettato vs Mucelli, Muay Thai PRO 74 kg, sabato 24 ottobre 2026', scade: '2026-10-24' },
+];
+
+(function () {
+  const sez = document.getElementById('novita');
+  const box = document.getElementById('nv-body');
+  const dlg = document.getElementById('nv-dlg');
+  if (!sez || !box) return;
+  const d = new Date();
+  const oggi = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const attive = BACHECA.filter(n => n.immagine && (!n.scade || oggi <= n.scade));
+  if (!attive.length) {
+    document.querySelectorAll('[data-novita]').forEach(a => a.remove());
+    sez.remove();
+    return;
+  }
+  sez.hidden = false;
+
+  dlg.querySelector('.nv-dlg-x').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+
+  const griglia = document.createElement('div');
+  griglia.className = 'nv-griglia' + (attive.length > 1 ? ' molte' : '');
+  attive.forEach(n => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'nv-poster';
+    b.setAttribute('aria-label', 'Ingrandisci la locandina: ' + (n.titolo || ''));
+    const img = document.createElement('img');
+    img.src = n.immagine; img.alt = n.titolo || 'Locandina'; img.loading = 'lazy';
+    b.appendChild(img);
+    b.addEventListener('click', () => {
+      const big = dlg.querySelector('img'); big.src = n.immagine; big.alt = img.alt;
+      if (dlg.showModal) dlg.showModal(); else window.open(n.immagine, '_blank', 'noopener');
+    });
+    griglia.appendChild(b);
+  });
+  box.appendChild(griglia);
+})();
+</script>
 
 <script>
 /* ════════════════════════════════════════════════════════════════
@@ -1871,7 +1965,7 @@ const MAESTRO = {
 
 /* ── ALTRI ISTRUTTORI ── { nome, ruolo, foto } */
 const ISTRUTTORI = [
-  { nome: 'Fausta Pisani', ruolo: 'Istruttrice Functional e Pilates', foto: '' },
+  { nome: 'Fausta Pisani', ruolo: 'Istruttrice Functional e Pilates', foto: 'foto/istruttori/fausta-pisani.jpg' },
 ];
 
 /* ── RISULTATI DEGLI ATLETI ── { anno, atleta, titolo } */
