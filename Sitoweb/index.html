@@ -1003,17 +1003,19 @@ window.FX = {
      ════════════════════════════════════════════════════════════════ */
   .nv-griglia { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; }
   .nv-poster {
-    display: block; width: min(100%, 440px); padding: 0; border: 0; cursor: zoom-in; background: var(--ash);
-    border-radius: 18px; overflow: hidden; box-shadow: 0 18px 40px rgba(43,37,32,.16);
+    display: block; width: min(64vw, 280px); padding: 0; border: 0; cursor: zoom-in; background: var(--ash);
+    border-radius: 14px; overflow: hidden; box-shadow: 0 18px 40px rgba(43,37,32,.16);
   }
-  .nv-griglia.molte .nv-poster { width: min(100%, 340px); }
+  .nv-griglia.molte .nv-poster { width: min(42vw, 240px); }
+  html.fx-hover .nv-poster { transition: transform .3s var(--fx-ease), box-shadow .3s ease; }
+  @media (hover: hover) { html.fx-hover .nv-poster:hover { transform: translateY(-4px); box-shadow: 0 22px 44px rgba(43,37,32,.2); } }
   .nv-poster img { display: block; width: 100%; height: auto; }
   .nv-dlg { padding: 0; border: 0; background: transparent; max-width: min(92vw, 720px); max-height: 92vh; overflow: visible; }
   .nv-dlg::backdrop { background: rgba(24,19,15,.92); }
   .nv-dlg img { display: block; max-width: 100%; max-height: 88vh; width: auto; height: auto; border-radius: 12px; }
   .nv-dlg .nv-dlg-x { position: fixed; top: 1rem; right: 1rem; color: #fff; border-color: rgba(255,255,255,.35); }
   @media (max-width: 639.98px) {
-    #novita { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+    #novita { padding-top: 3rem; padding-bottom: 3rem; }
   }
 
 </style>
@@ -1081,7 +1083,7 @@ window.FX = {
 <!-- ═══════════ BACHECA ═══════════
      Le locandine si cambiano nella lista BACHECA nello script "BACHECA" in fondo alla pagina.
      Se non ci sono novità in corso la sezione (e la voce di menu) spariscono da sole. -->
-<section id="novita" class="py-20" style="background: var(--coal); border-bottom: 1px solid var(--line);" hidden>
+<section id="novita" class="py-16" style="background: var(--coal); border-bottom: 1px solid var(--line);" hidden>
   <div class="max-w-7xl mx-auto px-6">
     <div class="text-center mb-10">
       <div>
