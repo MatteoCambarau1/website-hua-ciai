@@ -479,6 +479,11 @@ window.FX = {
   .corsi-info > div { background: var(--black); padding: 1.6rem; }
   .corsi-info p { font-size: .9rem; line-height: 1.6; color: var(--light); margin-top: .6rem; }
   .corsi-info .cta { display: flex; align-items: center; }
+  .ico-wa {
+    width: 15px; height: 15px; flex: none; background: currentColor;
+    -webkit-mask: url('https://cdn.jsdelivr.net/npm/simple-icons@13/icons/whatsapp.svg') center / contain no-repeat;
+            mask: url('https://cdn.jsdelivr.net/npm/simple-icons@13/icons/whatsapp.svg') center / contain no-repeat;
+  }
 
   /* ═══ ORARI ═══ */
   .apertura { display: flex; flex-wrap: wrap; gap: 1px; background: var(--line); border: 1px solid var(--line); }
@@ -1227,7 +1232,7 @@ window.FX = {
       </h2>
       <div class="section-line max-w-[80px] mt-8 mb-8"></div>
       <p class="text-[15px] leading-relaxed" style="color: var(--muted);">
-        Dai più piccoli agli agonisti: tutto quello che si fa in palestra, con fasce d'età, giorni e quote.
+        Dai più piccoli agli agonisti: tutto quello che si fa in palestra, con fasce d'età e giorni.
       </p>
     </div>
 
@@ -1242,7 +1247,7 @@ window.FX = {
         <div class="kicker kicker-white">Iscrizione</div>
         <p id="info-iscrizione"></p>
       </div>
-      <div class="cta"><a href="#modulo" class="btn btn-white">Chiedi informazioni</a></div>
+      <div class="cta"><a href="#modulo" id="cta-prova" class="btn btn-white" target="_blank" rel="noopener"><span class="ico-wa" aria-hidden="true"></span>Prenota su WhatsApp</a></div>
     </div>
   </div>
 </section>
@@ -1997,36 +2002,37 @@ const ISTRUTTORI = [
 
 /* ── CORSI E ATTIVITÀ ──
    id          → nome breve senza spazi, usato nell'orario qui sotto
-   eta, prezzo → lascia '' finché non li abbiamo
+   eta         → lascia '' finché non la abbiamo
    quando      → facoltativo: se manca, i giorni vengono presi dall'orario
    referente   → facoltativo: id del referente nei CONTATTI a cui va il WhatsApp del modulo */
 const CORSI = [
   { id: 'baby',       nome: 'Muay Thai Baby',
     descrizione: 'Per i più piccoli, in due gruppi per età: gioco, coordinazione e prime basi tecniche in un ambiente sicuro, con attenzione a rispetto e disciplina.',
-    eta: '5–9 e 10–13 anni', prezzo: '' },
+    eta: '5–9 e 10–13 anni' },
   { id: 'giovani',    nome: 'Muay Thai Giovani',
     descrizione: 'Per gli adolescenti: tecnica, preparazione fisica e fiducia in sé, con un lavoro graduale e controllato.',
-    eta: '13–16 anni', prezzo: '' },
+    eta: '13–16 anni' },
   { id: 'adulti',     nome: 'Muay Thai Adulti',
     descrizione: 'Per amatori e principianti: tenersi in forma e imparare le basi della disciplina, senza obbligo di combattere. Anche al mattino presto.',
-    eta: '', prezzo: '' },
+    eta: '' },
   { id: 'agonisti',   nome: 'Muay Thai Agonisti',
     descrizione: 'Preparazione atletica e tecnica avanzata per chi affronta le competizioni.',
-    eta: '', prezzo: '' },
+    eta: '' },
   { id: 'functional', nome: 'Functional Training',
     descrizione: 'Allenamenti funzionali per forza, resistenza e flessibilità, con Fausta Pisani.',
-    eta: '', prezzo: '', referente: 'fausta' },
+    eta: '', referente: 'fausta' },
   { id: 'pilates',    nome: 'Pilates',
     descrizione: '',
-    eta: '', prezzo: '', referente: 'fausta' },
+    eta: '', referente: 'fausta' },
   { id: 'private',    nome: 'Lezioni Private',
     descrizione: 'Percorsi individuali personalizzati direttamente con il Maestro.',
-    eta: '', prezzo: '', quando: 'Su appuntamento' },
+    eta: '', quando: 'Su appuntamento' },
 ];
 
 const INFO_CORSI = {
-  prova:      '',   // ← è prevista una lezione di prova? Come si prenota?
-  iscrizione: '',   // ← cosa serve per iscriversi (certificato medico, tesseramento, quote…)
+  prova:      'Sì, è prevista una lezione di prova. Si prenota su WhatsApp: scrivici e ti diciamo giorno e orario.',
+  iscrizione: 'Documenti richiesti: certificato medico.',
+  messaggioProva: 'Ciao! Vorrei prenotare una lezione di prova.',   // testo già pronto nel WhatsApp del pulsante
 };
 
 /* ── ORARI ──
@@ -2134,7 +2140,7 @@ const ORARI = {
     card.lastChild.style.marginBottom = '1.25rem';
     card.append(el('h3', '', c.nome), fill(el('p'), c.descrizione, 'Descrizione da inserire: a chi è rivolto e cosa si fa.'));
     const dl = el('dl');
-    [['Età', c.eta], ['Quando', c.quando || giorniDi(c.id)], ['Quota', c.prezzo]].forEach(([k, v]) => {
+    [['Età', c.eta], ['Quando', c.quando || giorniDi(c.id)]].forEach(([k, v]) => {
       const r = el('div'); r.append(el('dt', '', k), fill(el('dd'), v, 'Da definire')); dl.appendChild(r);
     });
     card.appendChild(dl);
@@ -2151,6 +2157,7 @@ const ORARI = {
 
   fill($('info-prova'), INFO_CORSI.prova, 'Da definire: è prevista una lezione di prova? Come si prenota?');
   fill($('info-iscrizione'), INFO_CORSI.iscrizione, 'Da definire: documenti richiesti, tesseramento e modalità di pagamento.');
+  $('cta-prova').href = waLink(CONTATTI.referentePredefinito) + '?text=' + encodeURIComponent(INFO_CORSI.messaggioProva);
 
   // menu "Mi interessa" del modulo contatti
   const sel = $('argomento');
