@@ -1065,6 +1065,9 @@ window.FX = {
     border: 1.5px solid currentColor; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); }
   .nv-luogo:hover { color: var(--white); }
   .nv-cta { margin-top: 1rem; width: 100%; justify-content: center; padding: .85rem 1rem; font-size: .7rem; }
+  .nv-gruppo + .nv-gruppo, .nv-gruppo + .nv-griglia, .nv-griglia + .nv-gruppo { margin-top: 3rem; }
+  .nv-gruppo-piede { width: min(100%, 26rem); margin: 1.75rem auto 0; display: flex; flex-direction: column; align-items: center; }
+  .nv-gruppo-piede .nv-luogo { margin-top: 0; }
   .nv-vuoto { text-align: center; color: var(--muted); font-size: .95rem; }
   @media (max-width: 639.98px) { .nv-avviso { flex-direction: column; } .nv-avviso .nv-poster { width: 100%; } }
   html.fx-hover .nv-poster { transition: transform .3s var(--fx-ease), box-shadow .3s ease; }
@@ -1465,6 +1468,8 @@ window.FX = {
    luogo     → indirizzo: si vede sotto il titolo e apre Google Maps (facoltativo)
    whatsapp  → messaggio già pronto: aggiunge il pulsante che apre WhatsApp (facoltativo)
    pulsante  → testo del pulsante WhatsApp (facoltativo, di base "Prenota su WhatsApp")
+   Eventi con stessa data, stesso luogo e stesso messaggio WhatsApp (es. più incontri della
+   stessa serata) si vedono affiancati, con indirizzo e pulsante una volta sola sotto.
 
    Esempi:
    { tipo: 'avviso', titolo: 'Chiusura per le feste', testo: 'La palestra resta chiusa dal 24 dicembre al 6 gennaio.', data: '2026-12-10', scade: '2027-01-06' },
@@ -1517,7 +1522,22 @@ const BACHECA = [
     });
     return b;
   }
-  function evento(n, concluso) {
+  function luogoLink(n) {
+    const l = mk('a', 'nv-luogo', n.luogo);
+    l.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(n.luogo);
+    l.target = '_blank'; l.rel = 'noopener';
+    return l;
+  }
+  function bottoneWa(n) {
+    // il numero WhatsApp arriva dai CONTATTI, più in basso nella pagina: il link si completa a pagina caricata
+    const w = mk('a', 'btn btn-white nv-cta');
+    w.href = '#modulo'; w.dataset.wa = n.whatsapp;
+    w.target = '_blank'; w.rel = 'noopener';
+    w.append(mk('span', 'ico-wa'), n.pulsante || 'Prenota su WhatsApp');
+    w.firstChild.setAttribute('aria-hidden', 'true');
+    return w;
+  }
+  function evento(n, concluso, condiviso) {
     const a = mk('article', 'nv-evento');
     if (n.immagine) a.appendChild(locandina(n));
     else {                                   // senza locandina: riquadro con la data
@@ -1527,26 +1547,13 @@ const BACHECA = [
     }
     a.append(mk('div', 'nv-data', (concluso ? 'Concluso · ' : '') + quando(n)), mk('h3', 'nv-titolo', n.titolo));
     if (n.testo) a.appendChild(mk('p', 'nv-testo', n.testo));
-    if (n.luogo) {
-      const l = mk('a', 'nv-luogo', n.luogo);
-      l.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(n.luogo);
-      l.target = '_blank'; l.rel = 'noopener';
-      a.appendChild(l);
-    }
-    if (n.whatsapp && !concluso) {
-      // il numero WhatsApp arriva dai CONTATTI, più in basso nella pagina: il link si completa a pagina caricata
-      const w = mk('a', 'btn btn-white nv-cta');
-      w.href = '#modulo'; w.dataset.wa = n.whatsapp;
-      w.target = '_blank'; w.rel = 'noopener';
-      w.append(mk('span', 'ico-wa'), n.pulsante || 'Prenota su WhatsApp');
-      w.firstChild.setAttribute('aria-hidden', 'true');
-      a.appendChild(w);
-    }
+    if (n.luogo && !condiviso) a.appendChild(luogoLink(n));
+    if (n.whatsapp && !concluso && !condiviso) a.appendChild(bottoneWa(n));
     return a;
   }
-  function griglia(lista, concluso) {
+  function griglia(lista, concluso, condiviso) {
     const g = mk('div', 'nv-griglia' + (lista.length > 1 ? ' molte' : ''));
-    lista.forEach(n => g.appendChild(evento(n, concluso)));
+    lista.forEach(n => g.appendChild(evento(n, concluso, condiviso)));
     return g;
   }
 
@@ -1566,7 +1573,28 @@ const BACHECA = [
 
   const bl = mk('div', 'nv-blocco');
   bl.appendChild(mk('div', 'kicker nv-label', 'Prossimi eventi'));
-  if (prossimi.length) bl.appendChild(griglia(prossimi, false));
+  if (prossimi.length) {
+    // stessa serata (data + luogo + messaggio WhatsApp uguali) → un solo indirizzo e un solo pulsante
+    const gruppi = [];
+    prossimi.forEach(n => {
+      const k = n.whatsapp ? [n.data, n.luogo || '', n.whatsapp].join('|') : null;
+      const g = k && gruppi.find(x => x.k === k);
+      if (g) g.eventi.push(n); else gruppi.push({ k, eventi: [n] });
+    });
+    let singoli = [];
+    const svuota = () => { if (singoli.length) { bl.appendChild(griglia(singoli, false)); singoli = []; } };
+    gruppi.forEach(g => {
+      if (g.eventi.length === 1) { singoli.push(g.eventi[0]); return; }
+      svuota();
+      const n = g.eventi[0], wrap = mk('div', 'nv-gruppo'), piede = mk('div', 'nv-gruppo-piede');
+      wrap.appendChild(griglia(g.eventi, false, true));
+      if (n.luogo) piede.appendChild(luogoLink(n));
+      piede.appendChild(bottoneWa(n));
+      wrap.appendChild(piede);
+      bl.appendChild(wrap);
+    });
+    svuota();
+  }
   else bl.appendChild(mk('p', 'nv-vuoto', 'Nessun evento in programma al momento: segui Instagram e Facebook per non perdere i prossimi.'));
   box.appendChild(bl);
 
