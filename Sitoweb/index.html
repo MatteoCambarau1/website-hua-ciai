@@ -1027,12 +1027,40 @@ window.FX = {
   /* ════════════════════════════════════════════════════════════════
      BACHECA — locandine di avvisi e prossimi eventi
      ════════════════════════════════════════════════════════════════ */
-  .nv-griglia { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; }
+  .nv-blocco + .nv-blocco, .nv-blocco + .nv-passati { margin-top: 3.5rem; }
+  .nv-label { text-align: center; margin-bottom: 1.5rem; }
+  .nv-griglia { display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem 1.5rem; }
+  .nv-evento { width: min(64vw, 280px); }
+  .nv-griglia.molte .nv-evento { width: min(42vw, 240px); }
   .nv-poster {
-    display: block; width: min(64vw, 280px); padding: 0; border: 0; cursor: zoom-in; background: var(--ash);
+    display: block; width: 100%; padding: 0; border: 0; cursor: zoom-in; background: var(--ash);
     border-radius: 14px; overflow: hidden; box-shadow: 0 18px 40px rgba(43,37,32,.16);
   }
-  .nv-griglia.molte .nv-poster { width: min(42vw, 240px); }
+  .nv-senza-img { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: default;
+    color: var(--white); font-size: 2.6rem; font-weight: 600; letter-spacing: -.03em; text-align: center; line-height: 1; }
+  .nv-senza-img small { display: block; margin-top: .6rem; font-size: .72rem; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); }
+  .nv-data { margin-top: 1rem; font-size: .68rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); }
+  .nv-titolo { margin-top: .4rem; font-size: 1rem; font-weight: 600; color: var(--white); line-height: 1.35; }
+  .nv-testo { margin-top: .4rem; font-size: .88rem; line-height: 1.55; color: var(--light); }
+  /* avvisi: riquadri di testo */
+  .nv-avvisi { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); max-width: 52rem; margin: 0 auto; }
+  .nv-avviso { background: var(--black); padding: 1.5rem 1.6rem; display: flex; gap: 1.4rem; align-items: flex-start; }
+  .nv-avviso .nv-data { margin-top: 0; }
+  .nv-avviso .nv-poster { width: 96px; flex: none; border-radius: 8px; box-shadow: none; }
+  /* eventi passati: archivio richiudibile, locandine attenuate */
+  .nv-passati { margin-top: 3.5rem; border-top: 1px solid var(--line-2); padding-top: 1.5rem; }
+  .nv-passati > summary { list-style: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: .6rem;
+    font-size: .72rem; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); }
+  .nv-passati > summary::-webkit-details-marker { display: none; }
+  .nv-passati > summary::after { content: '+'; font-size: 1rem; letter-spacing: 0; }
+  .nv-passati[open] > summary::after { content: '−'; }
+  .nv-passati > summary:hover { color: var(--white); }
+  .nv-passati .nv-griglia { margin-top: 2rem; }
+  .nv-passati .nv-evento { width: min(42vw, 180px); }
+  .nv-passati .nv-poster { filter: grayscale(100%); opacity: .75; box-shadow: none; }
+  .nv-passati .nv-data { color: var(--muted); }
+  .nv-vuoto { text-align: center; color: var(--muted); font-size: .95rem; }
+  @media (max-width: 639.98px) { .nv-avviso { flex-direction: column; } .nv-avviso .nv-poster { width: 100%; } }
   html.fx-hover .nv-poster { transition: transform .3s var(--fx-ease), box-shadow .3s ease; }
   @media (hover: hover) { html.fx-hover .nv-poster:hover { transform: translateY(-4px); box-shadow: 0 22px 44px rgba(43,37,32,.2); } }
   .nv-poster img { display: block; width: 100%; height: auto; }
@@ -1111,14 +1139,14 @@ window.FX = {
 </section>
 
 <!-- ═══════════ BACHECA ═══════════
-     Le locandine si cambiano nella lista BACHECA nello script "BACHECA" in fondo alla pagina.
-     Se non ci sono novità in corso la sezione (e la voce di menu) spariscono da sole. -->
-<section id="novita" class="py-16" style="background: var(--coal); border-bottom: 1px solid var(--line);" hidden>
+     Avvisi ed eventi si pubblicano nella lista BACHECA, nello script "BACHECA" in fondo alla pagina.
+     Gli eventi con la data passata finiscono da soli in "Eventi passati". -->
+<section id="novita" class="py-16" style="background: var(--coal); border-bottom: 1px solid var(--line);">
   <div class="max-w-7xl mx-auto px-6">
     <div class="text-center mb-10">
       <div>
         <div class="kicker mb-4">Bacheca</div>
-        <h2 class="display text-3xl md:text-4xl leading-tight">Avvisi e prossimi eventi.</h2>
+        <h2 class="display text-3xl md:text-4xl leading-tight">Avvisi ed eventi.</h2>
       </div>
     </div>
     <div id="nv-body"></div>
@@ -1415,15 +1443,26 @@ window.FX = {
 
 <script>
 /* ════════════════════════════════════════════════════════════════
-   BACHECA — locandine di avvisi e prossimi eventi, in cima alla pagina.
-   Una riga per locandina:
-     immagine → percorso del file, es. 'foto/novita/chiusura-natale.jpg'
-     titolo   → descrizione breve (non si vede: serve a chi usa lettori di schermo)
-     scade    → 'AAAA-MM-GG': dal giorno dopo la locandina sparisce da sola (facoltativo)
-   Se non ci sono locandine in corso, la sezione e la voce di menu si nascondono.
+   BACHECA — avvisi ed eventi, in cima alla pagina.
+   Per pubblicare qualcosa aggiungi una riga alla lista qui sotto
+   (le locandine vanno nella cartella foto/novita/).
+
+   tipo      → 'evento' oppure 'avviso'
+   titolo    → titolo breve, si vede sotto la locandina o nell'avviso
+   data      → 'AAAA-MM-GG'
+                 evento: il giorno dell'evento; dal giorno dopo passa in "Eventi passati"
+                 avviso: il giorno di pubblicazione (facoltativa)
+   fine      → evento su più giorni: l'ultimo giorno, 'AAAA-MM-GG' (facoltativo)
+   scade     → solo avvisi: dal giorno dopo l'avviso sparisce (facoltativo)
+   testo     → due righe di dettaglio (facoltativo)
+   immagine  → locandina, es. 'foto/novita/trofeo-2027.jpg' (facoltativa)
+
+   Esempi:
+   { tipo: 'avviso', titolo: 'Chiusura per le feste', testo: 'La palestra resta chiusa dal 24 dicembre al 6 gennaio.', data: '2026-12-10', scade: '2027-01-06' },
+   { tipo: 'evento', titolo: 'Stage di Muay Thai con il Maestro', data: '2027-02-14', testo: 'Sinnai, ore 10:00. Aperto a tutti i livelli.', immagine: 'foto/novita/stage-febbraio.jpg' },
    ════════════════════════════════════════════════════════════════ */
 const BACHECA = [
-  { immagine: 'foto/novita/bmt-fight-2-match.jpg', titolo: 'BMT Fight 2 — Bellettato vs Mucelli, Muay Thai PRO 74 kg, sabato 24 ottobre 2026', scade: '2026-10-24' },
+  { tipo: 'evento', titolo: 'BMT Fight 2 — Bellettato vs Mucelli, Muay Thai PRO 74 kg', data: '2026-10-24', immagine: 'foto/novita/bmt-fight-2-match.jpg' },
 ];
 
 (function () {
@@ -1433,33 +1472,75 @@ const BACHECA = [
   if (!sez || !box) return;
   const d = new Date();
   const oggi = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  const attive = BACHECA.filter(n => n.immagine && (!n.scade || oggi <= n.scade));
-  if (!attive.length) {
-    document.querySelectorAll('[data-novita]').forEach(a => a.remove());
-    sez.remove();
-    return;
-  }
-  sez.hidden = false;
+  const giorno = iso => new Date(iso + 'T12:00:00');
+  const dataLunga = iso => giorno(iso).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const dataBreve = iso => giorno(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+  const quando = n => n.fine && n.fine !== n.data ? 'Dal ' + dataBreve(n.data) + ' al ' + dataBreve(n.fine) : dataLunga(n.data);
+  const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt) e.textContent = txt; return e; };
+
+  const avvisi = BACHECA.filter(n => n.tipo === 'avviso' && (!n.scade || oggi <= n.scade))
+    .sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+  const eventi = BACHECA.filter(n => n.tipo !== 'avviso' && n.data);
+  const prossimi = eventi.filter(n => oggi <= (n.fine || n.data)).sort((a, b) => a.data.localeCompare(b.data));
+  const passati  = eventi.filter(n => oggi >  (n.fine || n.data)).sort((a, b) => b.data.localeCompare(a.data));
 
   dlg.querySelector('.nv-dlg-x').addEventListener('click', () => dlg.close());
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
 
-  const griglia = document.createElement('div');
-  griglia.className = 'nv-griglia' + (attive.length > 1 ? ' molte' : '');
-  attive.forEach(n => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'nv-poster';
+  function locandina(n) {
+    const b = mk('button', 'nv-poster'); b.type = 'button';
     b.setAttribute('aria-label', 'Ingrandisci la locandina: ' + (n.titolo || ''));
-    const img = document.createElement('img');
-    img.src = n.immagine; img.alt = n.titolo || 'Locandina'; img.loading = 'lazy';
+    const img = mk('img'); img.src = n.immagine; img.alt = n.titolo || 'Locandina'; img.loading = 'lazy';
     b.appendChild(img);
     b.addEventListener('click', () => {
       const big = dlg.querySelector('img'); big.src = n.immagine; big.alt = img.alt;
       if (dlg.showModal) dlg.showModal(); else window.open(n.immagine, '_blank', 'noopener');
     });
-    griglia.appendChild(b);
-  });
-  box.appendChild(griglia);
+    return b;
+  }
+  function evento(n, concluso) {
+    const a = mk('article', 'nv-evento');
+    if (n.immagine) a.appendChild(locandina(n));
+    else {                                   // senza locandina: riquadro con la data
+      const g = giorno(n.data), ph = mk('div', 'nv-poster nv-senza-img');
+      ph.append(String(g.getDate()), mk('small', '', g.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })));
+      a.appendChild(ph);
+    }
+    a.append(mk('div', 'nv-data', (concluso ? 'Concluso · ' : '') + quando(n)), mk('h3', 'nv-titolo', n.titolo));
+    if (n.testo) a.appendChild(mk('p', 'nv-testo', n.testo));
+    return a;
+  }
+  function griglia(lista, concluso) {
+    const g = mk('div', 'nv-griglia' + (lista.length > 1 ? ' molte' : ''));
+    lista.forEach(n => g.appendChild(evento(n, concluso)));
+    return g;
+  }
+
+  if (avvisi.length) {
+    const bl = mk('div', 'nv-blocco'), wrap = mk('div', 'nv-avvisi');
+    bl.appendChild(mk('div', 'kicker nv-label', 'Avvisi'));
+    avvisi.forEach(n => {
+      const r = mk('article', 'nv-avviso'), t = mk('div');
+      if (n.immagine) r.appendChild(locandina(n));
+      if (n.data) t.appendChild(mk('div', 'nv-data', dataBreve(n.data)));
+      t.appendChild(mk('h3', 'nv-titolo', n.titolo));
+      if (n.testo) t.appendChild(mk('p', 'nv-testo', n.testo));
+      r.appendChild(t); wrap.appendChild(r);
+    });
+    bl.appendChild(wrap); box.appendChild(bl);
+  }
+
+  const bl = mk('div', 'nv-blocco');
+  bl.appendChild(mk('div', 'kicker nv-label', 'Prossimi eventi'));
+  if (prossimi.length) bl.appendChild(griglia(prossimi, false));
+  else bl.appendChild(mk('p', 'nv-vuoto', 'Nessun evento in programma al momento: segui Instagram e Facebook per non perdere i prossimi.'));
+  box.appendChild(bl);
+
+  if (passati.length) {
+    const det = mk('details', 'nv-passati'), sum = mk('summary', '', 'Eventi passati (' + passati.length + ')');
+    det.append(sum, griglia(passati, true));
+    box.appendChild(det);
+  }
 })();
 </script>
 
