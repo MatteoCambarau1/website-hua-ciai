@@ -1059,6 +1059,12 @@ window.FX = {
   .nv-passati .nv-evento { width: min(42vw, 180px); }
   .nv-passati .nv-poster { filter: grayscale(100%); opacity: .75; box-shadow: none; }
   .nv-passati .nv-data { color: var(--muted); }
+  .nv-luogo { display: block; margin-top: .55rem; font-size: .82rem; line-height: 1.45; color: var(--muted);
+    padding-left: 1.1rem; position: relative; }
+  .nv-luogo::before { content: ''; position: absolute; left: 0; top: .2rem; width: .55rem; height: .55rem;
+    border: 1.5px solid currentColor; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); }
+  .nv-luogo:hover { color: var(--white); }
+  .nv-cta { margin-top: 1rem; width: 100%; justify-content: center; padding: .85rem 1rem; font-size: .7rem; }
   .nv-vuoto { text-align: center; color: var(--muted); font-size: .95rem; }
   @media (max-width: 639.98px) { .nv-avviso { flex-direction: column; } .nv-avviso .nv-poster { width: 100%; } }
   html.fx-hover .nv-poster { transition: transform .3s var(--fx-ease), box-shadow .3s ease; }
@@ -1456,6 +1462,9 @@ window.FX = {
    scade     → solo avvisi: dal giorno dopo l'avviso sparisce (facoltativo)
    testo     → due righe di dettaglio (facoltativo)
    immagine  → locandina, es. 'foto/novita/trofeo-2027.jpg' (facoltativa)
+   luogo     → indirizzo: si vede sotto il titolo e apre Google Maps (facoltativo)
+   whatsapp  → messaggio già pronto: aggiunge il pulsante che apre WhatsApp (facoltativo)
+   pulsante  → testo del pulsante WhatsApp (facoltativo, di base "Prenota su WhatsApp")
 
    Esempi:
    { tipo: 'avviso', titolo: 'Chiusura per le feste', testo: 'La palestra resta chiusa dal 24 dicembre al 6 gennaio.', data: '2026-12-10', scade: '2027-01-06' },
@@ -1463,6 +1472,16 @@ window.FX = {
    ════════════════════════════════════════════════════════════════ */
 const BACHECA = [
   { tipo: 'evento', titolo: 'BMT Fight 2 — Bellettato vs Mucelli, Muay Thai PRO 74 kg', data: '2026-10-24', immagine: 'foto/novita/bmt-fight-2-match.jpg' },
+  { tipo: 'evento', titolo: 'Elite Boxing — Trisciuzzi vs Isola', data: '2026-12-05',
+    testo: 'Muay Thai PRO, 55 kg, 3 riprese da 3 minuti.',
+    luogo: 'Palazzetto dello Sport “Roberto Melis”, Via Giliacquas 39, Elmas (CA)',
+    immagine: 'foto/novita/elite-boxing-trisciuzzi-isola.jpg',
+    whatsapp: 'Ciao! Vorrei prenotare il biglietto per Elite Boxing di sabato 5 dicembre a Elmas.', pulsante: 'Prenota il biglietto' },
+  { tipo: 'evento', titolo: 'Elite Boxing, undercard — Konteh vs Mucelli', data: '2026-12-05',
+    testo: 'Muay Thai PRO, 72 kg, 3 riprese da 3 minuti.',
+    luogo: 'Palazzetto dello Sport “Roberto Melis”, Via Giliacquas 39, Elmas (CA)',
+    immagine: 'foto/novita/elite-boxing-konteh-mucelli.jpg',
+    whatsapp: 'Ciao! Vorrei prenotare il biglietto per Elite Boxing di sabato 5 dicembre a Elmas.', pulsante: 'Prenota il biglietto' },
 ];
 
 (function () {
@@ -1508,6 +1527,21 @@ const BACHECA = [
     }
     a.append(mk('div', 'nv-data', (concluso ? 'Concluso · ' : '') + quando(n)), mk('h3', 'nv-titolo', n.titolo));
     if (n.testo) a.appendChild(mk('p', 'nv-testo', n.testo));
+    if (n.luogo) {
+      const l = mk('a', 'nv-luogo', n.luogo);
+      l.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(n.luogo);
+      l.target = '_blank'; l.rel = 'noopener';
+      a.appendChild(l);
+    }
+    if (n.whatsapp && !concluso) {
+      // il numero WhatsApp arriva dai CONTATTI, più in basso nella pagina: il link si completa a pagina caricata
+      const w = mk('a', 'btn btn-white nv-cta');
+      w.href = '#modulo'; w.dataset.wa = n.whatsapp;
+      w.target = '_blank'; w.rel = 'noopener';
+      w.append(mk('span', 'ico-wa'), n.pulsante || 'Prenota su WhatsApp');
+      w.firstChild.setAttribute('aria-hidden', 'true');
+      a.appendChild(w);
+    }
     return a;
   }
   function griglia(lista, concluso) {
@@ -1535,6 +1569,13 @@ const BACHECA = [
   if (prossimi.length) bl.appendChild(griglia(prossimi, false));
   else bl.appendChild(mk('p', 'nv-vuoto', 'Nessun evento in programma al momento: segui Instagram e Facebook per non perdere i prossimi.'));
   box.appendChild(bl);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof waLink !== 'function') return;
+    box.querySelectorAll('.nv-cta[data-wa]').forEach(w => {
+      w.href = waLink(CONTATTI.referentePredefinito) + '?text=' + encodeURIComponent(w.dataset.wa);
+    });
+  });
 
   if (passati.length) {
     const det = mk('details', 'nv-passati'), sum = mk('summary', '', 'Eventi passati (' + passati.length + ')');
