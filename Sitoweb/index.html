@@ -432,6 +432,13 @@ window.FX = {
     filter: grayscale(100%); border: 1px solid var(--line);
     display: flex; align-items: flex-end; padding: 1.2rem;
   }
+  /* Badge CONI in alto a destra sulla foto del Maestro (sulla parete libera, lontano dal viso) */
+  .portrait { position: relative; }
+  .badge-coni {
+    position: absolute; top: 1rem; right: 1rem; width: 24%; max-width: 132px; height: auto;
+    border: 1px solid rgba(255,255,255,.18); box-shadow: 0 6px 18px rgba(0,0,0,.22);
+  }
+  @media (max-width: 639.98px) { .badge-coni { top: .75rem; right: .75rem; width: 26%; } }
   .rows { border-top: 1px solid var(--line-2); }
   .rows > div {
     display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1.25rem;
@@ -1190,7 +1197,10 @@ window.FX = {
     <div class="maestro">
       <div class="corner-frame" style="padding: .75rem;">
         <span class="cbl"></span><span class="cbr"></span>
-        <div class="portrait ph-3" id="maestro-foto"></div>
+        <div class="portrait ph-3" id="maestro-foto" role="img" aria-label="Il Maestro Roberto Orrù">
+          <img class="badge-coni" src="foto/maestro/coni-riconoscimento.jpg" width="360" height="382"
+               alt="Riconosciuto e diplomato al Comitato Olimpico Italiano" loading="lazy">
+        </div>
       </div>
       <div>
         <div class="kicker mb-5">02 / Il Maestro</div>
@@ -1204,9 +1214,6 @@ window.FX = {
 
     <div class="sub-head"><h3>Istruttori</h3><span class="rule"></span></div>
     <div class="team-grid" id="istruttori"></div>
-
-    <div class="sub-head"><h3>Risultati dei nostri atleti</h3><span class="rule"></span></div>
-    <div class="two-col" id="risultati"></div>
   </div>
 </section>
 
@@ -1962,7 +1969,7 @@ const PALESTRA = {
 const MAESTRO = {
   nome:  'Roberto Orrù',
   ruolo: 'Fondatore & Head Coach',
-  foto:  '',                     // ← es. 'foto/maestro.jpg'
+  foto:  'foto/maestro/roberto-orru.jpg',
   bio:   'Cagliaritano, inizia nel 1994 con il pugilato; poi la Kick Boxing e, dal 2003, la Muay Thai, che non ha più lasciato. Tre volte Campione Italiano, sul podio ai Mondiali nel 2011 e nel 2015, Tecnico Federale Federkombat. Nel 2010 fonda la scuola Hua Ciai Muay Thai, dove ha formato e accompagnato tanti atleti a risultati importanti in Italia e all\'estero.',
   /* PERCORSO: una riga per tappa, in ordine di anno.
      top: true → la riga resta sempre visibile; le altre si aprono con "Percorso completo". */
@@ -1986,10 +1993,6 @@ const MAESTRO = {
 /* ── ALTRI ISTRUTTORI ── { nome, ruolo, foto } */
 const ISTRUTTORI = [
   { nome: 'Fausta Pisani', ruolo: 'Istruttrice Functional e Pilates', foto: 'foto/istruttori/fausta-pisani.jpg' },
-];
-
-/* ── RISULTATI DEGLI ATLETI ── { anno, atleta, titolo } */
-const RISULTATI = [
 ];
 
 /* ── CORSI E ATTIVITÀ ──
@@ -2071,7 +2074,7 @@ const ORARI = {
   /* Maestro */
   $('maestro-nome').textContent = MAESTRO.nome;
   $('maestro-ruolo').textContent = MAESTRO.ruolo;
-  if (MAESTRO.foto) { $('maestro-foto').style.backgroundImage = 'url("' + MAESTRO.foto + '")'; }
+  if (MAESTRO.foto) { $('maestro-foto').classList.remove('ph-3'); $('maestro-foto').style.backgroundImage = 'url("' + MAESTRO.foto + '")'; }
   else $('maestro-foto').appendChild(el('span', 'kicker', 'Foto del Maestro · in arrivo'));
   fill($('maestro-bio'), MAESTRO.bio, 'Presentazione del Maestro da inserire: chi è, da quanto insegna, cosa lo ha portato al Muay Thai.');
   const perc = MAESTRO.percorso.length ? MAESTRO.percorso : [
@@ -2118,21 +2121,6 @@ const ORARI = {
     if (p.foto) ph.style.backgroundImage = 'url("' + p.foto + '")';
     c.append(ph, fill(el('div', 'n'), p.nome, 'Nome istruttore'), fill(el('div', 'r'), p.ruolo, 'Ruolo: da inserire'));
     $('istruttori').appendChild(c);
-  });
-
-  /* Risultati */
-  const ris = RISULTATI.length ? RISULTATI : [{}, {}, {}, {}];
-  const metà = Math.ceil(ris.length / 2);
-  [ris.slice(0, metà), ris.slice(metà)].forEach(col => {
-    const box = el('div', 'rows');
-    col.forEach(r => {
-      const row = el('div'), v = el('span', 'v');
-      if (r.atleta) { v.append(el('strong', '', r.atleta), ' — ' + r.titolo); }
-      else fill(v, '', 'Atleta — titolo o risultato da inserire');
-      row.append(el('span', 'k' + (r.anno ? '' : ' todo'), r.anno || 'Anno'), v);
-      box.appendChild(row);
-    });
-    if (col.length) $('risultati').appendChild(box);
   });
 
   /* Corsi */
